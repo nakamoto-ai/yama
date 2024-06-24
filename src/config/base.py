@@ -10,7 +10,12 @@ class BaseConfig:
             load_dotenv(dotenv_path=env_path, override=True)
 
     def _get(self, key, default=None):
-        return os.getenv(key, default)
+        value = os.getenv(key, default)
+        
+        if value is None or value == "":
+            value = default 
+
+        return value
     
     def get_key_name(self) -> str:
         key = self._get(ENV_KEY_NAME)
