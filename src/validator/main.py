@@ -16,12 +16,12 @@ from config.validator import ValidatorConfig
 
 class MinerModule:
     def __init__(self, uid: int, ss58: str, address: str):
-        self.UID = uid
-        self.SS58 = ss58
-        self.Address = address
+        self.uid = uid
+        self.ss58 = ss58
+        self.address = address
 
     def __repr__(self):
-        return f"MinerModule(UID={self.UID}, SS58={self.SS58}, Address={self.Address})"
+        return f"MinerModule(UID={self.uid}, SS58={self.ss58}, Address={self.address})"
 
 class Validator(Module):
 
