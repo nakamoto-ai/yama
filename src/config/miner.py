@@ -7,9 +7,4 @@ class MinerConfig(BaseConfig):
         super().__init__(env_path, ignore_config_file)
 
     def get_miner_url(self) -> str:
-        url = self._get(ENV_MINER_URL, None)
-
-        if url is None or url == "":
-            url = "http://0.0.0.0:5000"
-
-        return str(url)
+        return str(self._get(ENV_MINER_URL, "http://0.0.0.0:5000"))
