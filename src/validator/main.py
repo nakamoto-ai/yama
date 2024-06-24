@@ -42,6 +42,7 @@ class Validator(Module):
         self.call_timeout = call_timeout
         self.use_testnet = use_testnet
         self.uid = None
+        self.queried_miners: list[MinerModule] = []
 
     def get_validator_uid(self) -> int:
         modules = get_map_modules(self.client, netuid=self.netuid, include_balances=False)
