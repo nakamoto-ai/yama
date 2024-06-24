@@ -7,7 +7,7 @@ ENV_TESTNET = "TESTNET"
 class BaseConfig:
     def __init__(self, env_path='.env', ignore_config_file=False):
         if ignore_config_file == False:
-            load_dotenv(dotenv_path=env_path)
+            load_dotenv(dotenv_path=env_path, override=True)
 
     def _get(self, key, default=None):
         return os.getenv(key, default)
