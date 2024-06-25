@@ -1,3 +1,5 @@
+from typing import List
+
 from .module import ScoredMinerModule
 
 class MinerRegistry:
@@ -33,3 +35,6 @@ class MinerRegistry:
         
         del self._uid_dict[miner.uid]
         del self._ss58_dict[miner.ss58]
+
+    def get_all(self) -> List[ScoredMinerModule]:
+        return list(self._uid_dict.values())
