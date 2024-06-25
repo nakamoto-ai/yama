@@ -44,7 +44,7 @@ class Validator(Module):
         return modules[self.key.ss58_address]['uid']
 
     async def validate_step(self):
-        modules = self.get_miner_addresses()
+        modules = self.get_miner_modules()
 
         # TODO: Ensure weights file matches modules uid-ss58 mapping.
 
@@ -64,7 +64,7 @@ class Validator(Module):
 
         print(f"modules: {modules}")
 
-    def get_miner_addresses(self) -> list[MinerModule]:
+    def get_miner_modules(self) -> list[MinerModule]:
         # Get all modules registered on subnet
         modules = self.client.get_map_modules(self.netuid, False)
 
