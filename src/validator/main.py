@@ -6,13 +6,14 @@ from communex.module.module import Module
 from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
 from communex._common import get_node_url
-from communex.misc import get_map_modules, get_map_subnets_params
 
 from substrateinterface import Keypair
 
 from loguru import logger
 
 from config.validator import ValidatorConfig
+from comx.interface import ComxInterface
+from comx.client import ComxClient
 
 class MinerModule:
     def __init__(self, uid: int, ss58: str, address: str):
@@ -29,7 +30,7 @@ class Validator(Module):
         self,
         key: Keypair,
         netuid: int,
-        client: CommuneClient,
+        client: ComxInterface,
         interval: int,
         call_timeout: int = 20,
         use_testnet: bool = False,
@@ -45,7 +46,7 @@ class Validator(Module):
         self.queried_miners: dict[int, MinerModule] = []
 
     def get_validator_uid(self) -> int:
-        modules = get_map_modules(self.client, netuid=self.netuid, include_balances=False)
+        modules = self.client.get_map_modules(self.netuid, False)
         if self.key.ss58_address not in modules:
             return -1
         return modules[self.key.ss58_address]['uid']
@@ -56,17 +57,16 @@ class Validator(Module):
 
     def get_miner_addresses(self):
         # Get all modules registered on subnet
-        modules = get_map_modules(self.client, netuid=self.netuid, include_balances=False)
+        modules = self.client.get_map_modules(self.netuid, False)
 
         # Get subnet hyperparameters
-        subnets = get_map_subnets_params(self.client)
-        subnet = subnets.get(self.netuid, None)
+        subnet = self.client.get_subnet_params(key=self.netuid)
 
         # Get maximum weight age for the subnet
         max_weight_age = subnet['max_weight_age']
 
         # Get the current block
-        current_block = self.client.get_block()["header"]["number"]
+        current_block = self.client.get_current_block()
         
         miners: list[MinerModule] = []
 
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     try:
         keypair = classic_load_key(config.get_key_name())
-        client = CommuneClient(get_node_url(use_testnet=config.get_testnet()))
+        client = ComxClient(client=CommuneClient(get_node_url(use_testnet=config.get_testnet())))
 
         validator = Validator(
             key=keypair,
