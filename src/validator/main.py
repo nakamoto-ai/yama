@@ -55,7 +55,7 @@ class Validator(Module):
         modules = self.get_miner_addresses()
         print(f"modules: {modules}")
 
-    def get_miner_addresses(self):
+    def get_miner_addresses(self) -> list[MinerModule]:
         # Get all modules registered on subnet
         modules = self.client.get_map_modules(self.netuid, False)
 
