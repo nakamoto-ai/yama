@@ -6,7 +6,7 @@ from communex.module.module import Module
 from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
 from communex._common import get_node_url
-from communex.misc import get_map_modules
+from communex.misc import get_map_modules, get_map_subnets_params
 
 from substrateinterface import Keypair
 
@@ -55,23 +55,53 @@ class Validator(Module):
         print(f"modules: {modules}")
 
     def get_miner_addresses(self):
+        # Get all modules registered on subnet
         modules = get_map_modules(self.client, netuid=self.netuid, include_balances=False)
+
+        # Get subnet hyperparameters
+        subnets = get_map_subnets_params(self.client)
+        subnet = subnets.get(self.netuid, None)
+
+        # Get maximum weight age for the subnet
+        max_weight_age = subnet['max_weight_age']
+
+        # Get the current block
+        current_block = self.client.get_block()["header"]["number"]
+        
         miners: list[MinerModule] = []
 
+        # Loop through the modules and append miners to the miner list
         for m in modules.values():
             uid = m['uid']
             ss58 = m['key']
             address = m['address']
-            incentive = m['incentive']
-            dividends = m['dividends']
             
+            # Always ignore yourself
             if uid == self.uid:
                 continue 
 
-            if incentive == dividends == 0 or incentive > dividends:
+            last_update = m['last_update']
+            reg_block = m['regblock']
+
+            if self.is_miner(last_update, reg_block, max_weight_age, current_block):
                 miners.append(MinerModule(uid=uid, ss58=ss58, address=address))
 
         return miners
+    
+    def is_miner(self, last_update: int, reg_block: int, max_weight_age: int, current_block: int) -> bool:
+        if last_update == reg_block:
+            # Its possible a validator just registered and hasn't scored miners yet.
+            # This is ok because it will soon begin scoring while in its immunity period
+            # resulting in this condition no longer being true.
+            return True
+        else:
+            # Its possible a validators last_update + max_weight_age is less than current_block
+            # but that means the validator is sleeping. Validator will begin to score 0's as a
+            # miner unless it wakes up and starts validating again.
+            if last_update + max_weight_age < current_block:
+                return True 
+            
+            return False
 
     def set_weights(self):
         pass
