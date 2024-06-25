@@ -41,3 +41,11 @@ class MinerRegistry:
     
     def get_all_by_ss58(self) -> dict[str, ScoredMinerModule]:
         return self._ss58_dict.copy()
+    
+    def to_uid_dict(self) -> dict[int, dict]:
+        miners = self.get_all_by_uid()
+        return {uid: miner.to_dict() for uid, miner in miners.items()}
+    
+    def to_ss58_dict(self) -> dict[str, dict]:
+        miners = self.get_all_by_ss58()
+        return {ss58: miner.to_dict() for ss58, miner in miners.items()}
