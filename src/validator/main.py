@@ -53,6 +53,23 @@ class Validator(Module):
 
     async def validate_step(self):
         modules = self.get_miner_addresses()
+
+        # TODO: Ensure weights file matches modules uid-ss58 mapping.
+
+        # TODO: Generate prompt/task.
+
+        # TODO: Determine 8 miners that will be queried.
+
+        # TODO: Query each of the miners.
+
+        # TODO: Score each of the miners.
+
+        # TODO: Write updates to weights file.
+
+        # TODO: 
+        #   If all miners are queried, vote and clear the miner cache.
+        #   Else add the miners to the miner cache.
+
         print(f"modules: {modules}")
 
     def get_miner_addresses(self) -> list[MinerModule]:
