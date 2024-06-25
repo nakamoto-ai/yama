@@ -36,5 +36,8 @@ class MinerRegistry:
         del self._uid_dict[miner.uid]
         del self._ss58_dict[miner.ss58]
 
-    def get_all(self) -> List[ScoredMinerModule]:
-        return list(self._uid_dict.values())
+    def get_all_by_uid(self) -> dict[int, ScoredMinerModule]:
+        return self._uid_dict.copy()
+    
+    def get_all_by_ss58(self) -> dict[str, ScoredMinerModule]:
+        return self._ss58_dict.copy()
