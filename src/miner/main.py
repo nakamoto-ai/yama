@@ -15,3 +15,10 @@ if __name__ == '__main__':
         print(f"MINER_URL: {config.get_miner_url()}")
     except ValueError as e:
         print(e)
+
+    if args.miner == "spacy":
+        from spacy_miner.py import SpacyMiner
+        miner = SpacyMiner(config=config)
+        SpacyMiner.start_miner_server(miner=miner)
+    else:
+        print("Error: Unsupported Miner")
