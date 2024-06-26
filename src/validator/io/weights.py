@@ -19,7 +19,7 @@ class WeightIO:
             logger.info(f"Created directory: {self.dir_path}")
 
         if not self.io.path_exists(self.file_path):
-            self.io.write_json_file(self.file_name, {})
+            self.io.write_json_file(self.file_path, {})
             logger.info(f"Created file: {self.file_path}")
 
     def write_weights(self, miner_registry: MinerRegistry):
