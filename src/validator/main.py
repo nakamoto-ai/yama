@@ -52,29 +52,7 @@ class Validator(Module):
 
     async def validate_step(self):
         miners = self.get_miner_modules()
-
-        new_registry = MinerRegistry()
-        old_registry = self.weight_io.read_weights() or MinerRegistry()
-
-        for miner in miners:
-            # Very important to get miner from the file using the ss58. This allows us
-            # to remember the score of the miner incase the UID changed.
-            old_miner = old_registry.get_by_ss58(miner.ss58)
-
-            # If a miner with the same ss58 was already written to the miner stored in
-            # weights file, transfer the score. Otherwise, this is a newly registered
-            # miner and default to 0.
-            score = 0
-            if old_miner is not None:
-                score = old_miner.score
-
-            # Write the most up-to-date miner values to the new registry.
-            new_registry.set(ScoredMinerModule(
-                miner.uid,
-                miner.ss58,
-                miner.address,
-                score
-            ))
+        new_registry = self.sync_miners(miners=miners)
 
         # Ensure the registry that holds the already queried miners
         # is up to date with the network.
@@ -197,6 +175,44 @@ class Validator(Module):
                 return True 
             
             return False
+        
+    def sync_miners(self, miners: list[MinerModule]) -> MinerRegistry:
+        """
+        Syncs the miners registered on the network with the persisted miners in the
+        weights file. The result is returned as a MinerRegistry containing all the
+        up-to-date UID-SS58 mappings. If a SS58 resulted in a changed UID, the scores
+        are remembered upon updating.
+
+        Args:
+            miners: A list of MinerModules holding the current state of the network.
+
+        Returns:
+            A MinerRegistry containing the up-to-date UUID-SS58 mappings.
+        """
+        new_registry = MinerRegistry()
+        old_registry = self.weight_io.read_weights() or MinerRegistry()
+
+        for miner in miners:
+            # Very important to get miner from the file using the ss58. This allows us
+            # to remember the score of the miner incase the UID changed.
+            old_miner = old_registry.get_by_ss58(miner.ss58)
+
+            # If a miner with the same ss58 was already written to the miner stored in
+            # weights file, transfer the score. Otherwise, this is a newly registered
+            # miner and default to 0.
+            score = 0
+            if old_miner is not None:
+                score = old_miner.score
+
+            # Write the most up-to-date miner values to the new registry.
+            new_registry.set(ScoredMinerModule(
+                miner.uid,
+                miner.ss58,
+                miner.address,
+                score
+            ))
+
+        return new_registry
 
     def set_weights(self):
         pass
