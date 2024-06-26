@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import time
 import os
+import random
 
 from communex.module.module import Module
 from communex.client import CommuneClient
@@ -103,6 +104,7 @@ class Validator(Module):
 
         # TODO: Generate prompt/task.
 
+        # Determine what miners need to be queried.
         counter = 0
         next_miners = MinerRegistry()
         new_registry_dict = new_registry.get_all_by_uid()
@@ -123,8 +125,12 @@ class Validator(Module):
         for k, v in next_miners_dict.items():
              # TODO: Query each of the miners.
             print(f"UID: {k}, Values: {v}")
-            
-        # TODO: Score each of the miners.
+
+        for k, v in next_miners_dict.items():
+            # TODO: Score each of the miners.
+            random_number = random.randint(1, 1000)
+            v.score = random_number
+            next_miners.set(v)
 
         # Add the newly-queried miners to the queried miner
         # registry.
