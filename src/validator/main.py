@@ -71,6 +71,13 @@ class Validator(Module):
             self.queried_miners = MinerRegistry()
 
     def get_miner_modules(self) -> list[MinerModule]:
+        """
+        Gets a list of all the miners currently registered on the subnet.
+
+        Returns:
+            A list of MinerModules representing all the miners currently
+            registered to the subnet.
+        """
         # Get all modules registered on subnet
         modules = self.client.get_map_modules(self.netuid, False)
 
