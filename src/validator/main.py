@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import time
+import os
 
 from communex.module.module import Module
 from communex.client import CommuneClient
@@ -15,6 +16,8 @@ from config.validator import ValidatorConfig
 from comx.interface import ComxInterface
 from comx.client import ComxClient
 from comx.miner.module import MinerModule
+from validator.io.weights import WeightIO
+from validator.io.io import IO
 
 class Validator(Module):
 
@@ -23,12 +26,14 @@ class Validator(Module):
         key: Keypair,
         netuid: int,
         client: ComxInterface,
+        weight_io: WeightIO,
         interval: int,
         call_timeout: int = 20,
         use_testnet: bool = False,
     ) -> None:
         super().__init__()
         self.client = client
+        self.weight_io = weight_io
         self.key = key
         self.netuid = netuid
         self.interval = interval
@@ -135,6 +140,10 @@ if __name__ == '__main__':
     parser.add_argument('--ignore-env-file', action='store_true', help='If set, ignore .env file')
     args = parser.parse_args()
 
+    home_dir = os.path.expanduser("~")
+    commune_dir = os.path.join(home_dir, ".commune")
+    yama_dir = os.path.join(commune_dir, "yama")
+
     config = ValidatorConfig(env_path=args.env, ignore_config_file=args.ignore_env_file)
 
     try:
@@ -145,6 +154,7 @@ if __name__ == '__main__':
             key=keypair,
             netuid=config.get_netuid(),
             client=client,
+            weight_io=WeightIO(io=IO(), dir_path=yama_dir, file_name="weights.json"),
             interval=config.get_validator_interval(),
             call_timeout=20,
             use_testnet=config.get_testnet()
