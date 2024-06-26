@@ -53,32 +53,7 @@ class Validator(Module):
     async def validate_step(self):
         miners = self.get_miner_modules()
         new_registry = self.sync_miners(miners=miners)
-
-        # Ensure the registry that holds the already queried miners
-        # is up to date with the network.
-        cached_miners = self.queried_miners.get_all_by_ss58()
-        for k, v in cached_miners.items():
-            updated_miner = new_registry.get_by_ss58(k)
-
-            # If the cached miner is no longer registered delete it
-            # from the cached miners registry.
-            if updated_miner is None:
-                self.queried_miners.delete_by_ss58(k)
-                continue
-
-            # If the miners UID changes, delete it by UID so the
-            # cached miner is not duplicated in the registry with
-            # two different UIDs.
-            if updated_miner.uid != v.uid:
-                self.queried_miners.delete_by_uid(v.uid)
-
-            # Write the up-to-date miner to the cached miner registry.
-            self.queried_miners.set(ScoredMinerModule(
-                uid=updated_miner.uid,
-                ss58=updated_miner.ss58,
-                address=updated_miner.address,
-                score=updated_miner.score
-            ))
+        self.sync_cache(registry=new_registry)
 
         # TODO: Generate prompt/task.
 
@@ -213,6 +188,43 @@ class Validator(Module):
             ))
 
         return new_registry
+    
+    def sync_cache(self, registry: MinerRegistry):
+        """
+        Syncs the cached miners that already been queried with the contents of 
+        registry. Cached miners are updated upon a UID-SS58 change, or if a miner
+        deregistered and is no longer contained in the registry.
+
+        This method should be called immediately following a call to sync_miners.
+
+        Args:
+            registry: A MinerRegistry holding the most up-to-date miners on the network.
+        """
+        # Ensure the registry that holds the already queried miners
+        # is up to date with the network.
+        cached_miners = self.queried_miners.get_all_by_ss58()
+        for k, v in cached_miners.items():
+            updated_miner = registry.get_by_ss58(k)
+
+            # If the cached miner is no longer registered delete it
+            # from the cached miners registry.
+            if updated_miner is None:
+                self.queried_miners.delete_by_ss58(k)
+                continue
+
+            # If the miners UID changes, delete it by UID so the
+            # cached miner is not duplicated in the registry with
+            # two different UIDs.
+            if updated_miner.uid != v.uid:
+                self.queried_miners.delete_by_uid(v.uid)
+
+            # Write the up-to-date miner to the cached miner registry.
+            self.queried_miners.set(ScoredMinerModule(
+                uid=updated_miner.uid,
+                ss58=updated_miner.ss58,
+                address=updated_miner.address,
+                score=updated_miner.score
+            ))
 
     def set_weights(self):
         pass
