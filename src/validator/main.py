@@ -61,17 +61,7 @@ class Validator(Module):
 
         self.query(miners=next_miners)
         self.score(miners=next_miners)
-
-        # Add the newly-queried miners to the queried miner
-        # registry.
-        next_miners_dict = next_miners.get_all_by_uid()
-        for k, v in next_miners_dict.items():
-            self.queried_miners.set(ScoredMinerModule(
-                uid=k,
-                ss58=v.ss58,
-                address=v.address,
-                score=v.score
-            ))
+        self.cache(miners=next_miners)
 
         self.weight_io.write_weights(new_registry)
 
@@ -260,6 +250,23 @@ class Validator(Module):
             random_number = random.randint(1, 1000)
             v.score = random_number
             miners.set(v)
+
+    def cache(self, miners: MinerRegistry):
+        """
+        Takes a MinerRegistry containing the queried and scored miners for
+        this voting cycle and caches the data in queried_miners.
+
+        Args:
+            miners: The MinerRegistry containing all the queried and scored miners.
+        """
+        miners_dict = miners.get_all_by_uid()
+        for k, v in miners_dict.items():
+            self.queried_miners.set(ScoredMinerModule(
+                uid=k,
+                ss58=v.ss58,
+                address=v.address,
+                score=v.score
+            ))
     
     def set_weights(self):
         pass
