@@ -60,13 +60,7 @@ class Validator(Module):
         next_miners = self.next_miners(registry=new_registry)
 
         self.query(miners=next_miners)
-
-        next_miners_dict = next_miners.get_all_by_uid()
-        for k, v in next_miners_dict.items():
-            # TODO: Score each of the miners.
-            random_number = random.randint(1, 1000)
-            v.score = random_number
-            next_miners.set(v)
+        self.score(miners=next_miners)
 
         # Add the newly-queried miners to the queried miner
         # registry.
@@ -250,6 +244,22 @@ class Validator(Module):
         miners_dict = miners.get_all_by_uid()
         for k, v in miners_dict.items():
             print(f"UID: {k}, Values: {v}")
+
+    def score(self, miners: MinerRegistry):
+        """
+        Takes a list of miners that will be scored.
+
+        TODO: This function is a placeholder - needs to be updated
+
+        Args:
+            miners: The MinerRegistry containing the miners that will be scored.
+        """
+        miners_dict = miners.get_all_by_uid()
+        for _, v in miners_dict.items():
+            # TODO: Score each of the miners.
+            random_number = random.randint(1, 1000)
+            v.score = random_number
+            miners.set(v)
     
     def set_weights(self):
         pass
