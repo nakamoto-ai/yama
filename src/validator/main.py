@@ -119,8 +119,11 @@ class Validator(Module):
             if counter == 8:
                 break
 
-        # TODO: Query each of the miners.
-
+        next_miners_dict = next_miners.get_all_by_uid()
+        for k, v in next_miners_dict.items():
+             # TODO: Query each of the miners.
+            print(f"UID: {k}, Values: {v}")
+            
         # TODO: Score each of the miners.
 
         # Add the newly-queried miners to the queried miner
