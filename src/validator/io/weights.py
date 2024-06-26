@@ -42,30 +42,3 @@ class WeightIO:
                 score=miner_data["score"]
             ))
         return miner_registry
-
-if __name__ == "__main__":
-
-    miners = MinerRegistry()
-    miners.set(ScoredMinerModule(1, "ss1d", "asdf", 99))
-    miners.set(ScoredMinerModule(2, "ss2", "asdf", 991))
-    miners.set(ScoredMinerModule(3, "ss3", "asdf", 992))
-    miners.set(ScoredMinerModule(4, "ss4", "asdf", 993))
-
-    home_dir = os.path.expanduser("~")
-    commune_dir = os.path.join(home_dir, ".commune")
-    yama_dir = os.path.join(commune_dir, "yama")
-    weights_file = os.path.join(yama_dir, "weights.json")
-    
-    from .io import IO
-    wio = WeightIO(io=IO(), dir_path=yama_dir, file_name=weights_file)
-    wio.validate_weights_file()
-    wio.write_weights(miners)
-
-    w = wio.read_weights()
-    wd = w.to_ss58_dict()
-    for k, v in wd.items():
-        print(k)
-        print(isinstance(k, str))
-
-    if isinstance(w, MinerRegistry):
-        print("YESSS")
