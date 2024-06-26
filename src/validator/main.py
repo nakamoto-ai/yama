@@ -136,11 +136,10 @@ class Validator(Module):
 
         self.weight_io.write_weights(new_registry)
 
-        # TODO: 
-        #   If all miners are queried, vote and clear the miner cache.
-        #   Else add the miners to the miner cache.
-
-        # print(f"modules: {miners}")
+        if len(self.queried_miners.get_all_by_ss58()) == len(new_registry.get_all_by_ss58()):
+            # TODO: Call vote method.
+            print("Time to vote!")
+            self.queried_miners = MinerRegistry()
 
     def get_miner_modules(self) -> list[MinerModule]:
         # Get all modules registered on subnet
