@@ -103,11 +103,36 @@ class Validator(Module):
 
         # TODO: Generate prompt/task.
 
-        # TODO: Determine 8 miners that will be queried.
+        counter = 0
+        next_miners = MinerRegistry()
+        new_registry_dict = new_registry.get_all_by_uid()
+        for k, v in new_registry_dict.items():
+            queried_miner = self.queried_miners.get_by_ss58(v.ss58)
+
+            # If miner was already queried skip and go to the next.
+            if queried_miner is not None:
+                continue 
+
+            next_miners.set(v)
+            counter += 1
+
+            if counter == 8:
+                break
 
         # TODO: Query each of the miners.
 
         # TODO: Score each of the miners.
+
+        # Add the newly-queried miners to the queried miner
+        # registry.
+        next_miners_dict = next_miners.get_all_by_uid()
+        for k, v in next_miners_dict.items():
+            self.queried_miners.set(ScoredMinerModule(
+                uid=k,
+                ss58=v.ss58,
+                address=v.address,
+                score=v.score
+            ))
 
         self.weight_io.write_weights(new_registry)
 
@@ -115,7 +140,7 @@ class Validator(Module):
         #   If all miners are queried, vote and clear the miner cache.
         #   Else add the miners to the miner cache.
 
-        print(f"modules: {miners}")
+        # print(f"modules: {miners}")
 
     def get_miner_modules(self) -> list[MinerModule]:
         # Get all modules registered on subnet
