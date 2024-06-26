@@ -57,22 +57,7 @@ class Validator(Module):
 
         # TODO: Generate prompt/task.
 
-        # Determine what miners need to be queried.
-        counter = 0
-        next_miners = MinerRegistry()
-        new_registry_dict = new_registry.get_all_by_uid()
-        for k, v in new_registry_dict.items():
-            queried_miner = self.queried_miners.get_by_ss58(v.ss58)
-
-            # If miner was already queried skip and go to the next.
-            if queried_miner is not None:
-                continue 
-
-            next_miners.set(v)
-            counter += 1
-
-            if counter == 8:
-                break
+        next_miners = self.next_miners(registry=new_registry)
 
         next_miners_dict = next_miners.get_all_by_uid()
         for k, v in next_miners_dict.items():
@@ -225,7 +210,36 @@ class Validator(Module):
                 address=updated_miner.address,
                 score=updated_miner.score
             ))
+            
+    def next_miners(self, registry: MinerRegistry) -> MinerRegistry:
+        """
+        Determines and returns the next miners that should be queried. It chooses
+        up to 8 miners that have not yet been queried for this voting cycle.
 
+        Args:
+            registry: The MinerRegistry representing the current state of the network.
+
+        Returns:
+            A MinerRegistry containing the miners that should be queried next.
+        """
+        counter = 0
+        next_miners = MinerRegistry()
+        new_registry_dict = registry.get_all_by_uid()
+        for _, v in new_registry_dict.items():
+            queried_miner = self.queried_miners.get_by_ss58(v.ss58)
+
+            # If miner was already queried skip and go to the next.
+            if queried_miner is not None:
+                continue 
+
+            next_miners.set(v)
+            counter += 1
+
+            if counter == 8:
+                break
+        
+        return next_miners
+    
     def set_weights(self):
         pass
 
