@@ -15,7 +15,8 @@ from loguru import logger
 from config.validator import ValidatorConfig
 from comx.interface import ComxInterface
 from comx.client import ComxClient
-from comx.miner.module import MinerModule
+from comx.miner.module import MinerModule, ScoredMinerModule
+from comx.miner.registry import MinerRegistry
 from validator.io.weights import WeightIO
 from validator.io.io import IO
 
@@ -49,9 +50,30 @@ class Validator(Module):
         return modules[self.key.ss58_address]['uid']
 
     async def validate_step(self):
-        modules = self.get_miner_modules()
+        miners = self.get_miner_modules()
 
-        # TODO: Ensure weights file matches modules uid-ss58 mapping.
+        new_registry = MinerRegistry()
+        old_registry = self.weight_io.read_weights() or MinerRegistry()
+
+        for miner in miners:
+            # Very important to get miner from the file using the ss58. This allows us
+            # to remember the score of the miner incase the UID changed.
+            old_miner = old_registry.get_by_ss58(miner.ss58)
+
+            # If a miner with the same ss58 was already written to the miner stored in
+            # weights file, transfer the score. Otherwise, this is a newly registered
+            # miner and default to 0.
+            score = 0
+            if old_miner is not None:
+                score = old_miner.score
+
+            # Write the most up-to-date miner values to the new registry.
+            new_registry.set(ScoredMinerModule(
+                miner.uid,
+                miner.ss58,
+                miner.address,
+                score
+            ))
 
         # TODO: Generate prompt/task.
 
@@ -61,13 +83,13 @@ class Validator(Module):
 
         # TODO: Score each of the miners.
 
-        # TODO: Write updates to weights file.
+        self.weight_io.write_weights(new_registry)
 
         # TODO: 
         #   If all miners are queried, vote and clear the miner cache.
         #   Else add the miners to the miner cache.
 
-        print(f"modules: {modules}")
+        print(f"modules: {miners}")
 
     def get_miner_modules(self) -> list[MinerModule]:
         # Get all modules registered on subnet
