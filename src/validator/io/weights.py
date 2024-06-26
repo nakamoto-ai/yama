@@ -2,7 +2,7 @@ import os
 
 from loguru import logger
 
-from .interface import IOInterface
+from .io import IOInterface
 from comx.miner.registry import MinerRegistry
 from comx.miner.module import ScoredMinerModule
 
