@@ -41,7 +41,7 @@ class Validator(Module):
         self.call_timeout = call_timeout
         self.use_testnet = use_testnet
         self.uid = None
-        self.queried_miners: dict[int, MinerModule] = []
+        self.queried_miners: MinerRegistry = MinerRegistry()
 
     def get_validator_uid(self) -> int:
         modules = self.client.get_map_modules(self.netuid, False)
@@ -73,6 +73,32 @@ class Validator(Module):
                 miner.ss58,
                 miner.address,
                 score
+            ))
+
+        # Ensure the registry that holds the already queried miners
+        # is up to date with the network.
+        cached_miners = self.queried_miners.get_all_by_ss58()
+        for k, v in cached_miners.items():
+            updated_miner = new_registry.get_by_ss58(k)
+
+            # If the cached miner is no longer registered delete it
+            # from the cached miners registry.
+            if updated_miner is None:
+                self.queried_miners.delete_by_ss58(k)
+                continue
+
+            # If the miners UID changes, delete it by UID so the
+            # cached miner is not duplicated in the registry with
+            # two different UIDs.
+            if updated_miner.uid != v.uid:
+                self.queried_miners.delete_by_uid(v.uid)
+
+            # Write the up-to-date miner to the cached miner registry.
+            self.queried_miners.set(ScoredMinerModule(
+                uid=updated_miner.uid,
+                ss58=updated_miner.ss58,
+                address=updated_miner.address,
+                score=updated_miner.score
             ))
 
         # TODO: Generate prompt/task.
