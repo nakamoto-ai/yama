@@ -27,6 +27,10 @@ class DataLoader:
         data = self.load_json_data(file_path)
         return [school["name"] for school in data["results"]]
 
+    def load_majors(self, file_path):
+        data = self.load_json_data(file_path)
+        return [major["name"] for major in data["majors"]]
+
     def load_skills_data(self):
         skills_data = load_dataset("DrDominikDellermann/SkillsDataset")["train"]["skills"]
         return [item['skill'] for sublist in skills_data for item in sublist]
