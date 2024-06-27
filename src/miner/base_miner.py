@@ -13,9 +13,10 @@ from communex.client import CommuneClient
 from substrateinterface import Keypair
 
 class BaseMiner(Module):
-    def __init__(self, key: Keypair, client: CommuneClient):
+    def __init__(self, key: Keypair, client: CommuneClient, url: str):
         self.key = key 
         self.client = client 
+        self.url = url
 
     @endpoint
     def generate(self, prompt: str) -> Dict[str, Any]:

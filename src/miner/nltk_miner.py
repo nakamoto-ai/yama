@@ -166,8 +166,8 @@ class Resume:
         return resume
 
 class NltkMiner(BaseMiner):
-    def __init__(self, key: Keypair, client: CommuneClient):
-        super().__init__(key=key, client=client)
+    def __init__(self, key: Keypair, client: CommuneClient, url: str):
+        super().__init__(key=key, client=client, url=url)
 
     def generate_response(self, prompt: str):
         self.resume_generator = Resume(job_title_data, skill_list, majors_data)
