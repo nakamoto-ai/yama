@@ -93,7 +93,8 @@ class TestValidator(TestCase):
             # Loop through all returned miners and check to see if it was expected
             # to be returned as a miner.
             for m in miners:
-                assert(m.ss58 in expected_miners), f"{test_name}: Did not expect miner {m.ss58} to be returned"
+                if m.ss58 not in expected_miners:
+                    raise ValueError(f"Testing Logic Error: {m.ss58} not defined in expected_miners")
                 
                 expected_result = expected_miners[m.ss58]
                 assert(expected_result), f"{test_name} Expected {m.ss58} to not be a miner"
