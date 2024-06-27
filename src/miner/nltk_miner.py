@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from collections import Counter
 from math import log
 
-from faker import Faker
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
@@ -91,7 +90,6 @@ class Resume:
     def __init__(self, job_titles, skills, majors):
         self.data_loader = DataLoader()
         self.scorer = RelevanceScorer(job_titles, skills, majors)
-        self.faker = Faker()
 
     def get_work_experience(self, job_titles, graduation_year):
         work_experience = []
