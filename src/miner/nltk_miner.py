@@ -31,11 +31,11 @@ class DataLoader:
         data = self.load_json_data(file_path)
         return [major["name"] for major in data["majors"]]
 
-    def load_skills_data(self):
+    def load_skills(self):
         skills_data = load_dataset("DrDominikDellermann/SkillsDataset")["train"]["skills"]
         return [item['skill'] for sublist in skills_data for item in sublist]
 
-    def load_job_title_data(self):
+    def load_job_titles(self):
         job_title_data = load_dataset("jacob-hugging-face/job-descriptions")
         return job_title_data
 
