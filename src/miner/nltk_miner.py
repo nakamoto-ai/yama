@@ -1,16 +1,11 @@
 import random
 import json
-from base_miner import BaseMiner
+from miner.base_miner import BaseMiner
 from datetime import datetime, timedelta
 from collections import Counter
 from math import log
 
-from substrateinterface import Keypair
-
-from communex.client import CommuneClient
-
 from faker import Faker
-import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
@@ -166,8 +161,8 @@ class Resume:
         return resume
 
 class NltkMiner(BaseMiner):
-    def __init__(self, key: Keypair, client: CommuneClient, url: str):
-        super().__init__(key=key, client=client, url=url)
+    def __init__(self):
+        super().__init__()
 
     def generate_response(self, prompt: str):
         self.resume_generator = Resume(job_title_data, skill_list, majors_data)
