@@ -16,9 +16,9 @@ if __name__ == '__main__':
     except ValueError as e:
         print(e)
 
-    if args.miner == "spacy":
-        from spacy_miner.py import SpacyMiner
-        miner = SpacyMiner(config=config)
-        SpacyMiner.start_miner_server(miner=miner)
+    if args.miner == "nltk":
+        from nltk_miner.py import NltkMiner
+        miner = NltkMiner(config=config)
+        NltkMiner.start_miner_server(miner=miner)
     else:
         print("Error: Unsupported Miner")
