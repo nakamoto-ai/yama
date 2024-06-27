@@ -95,6 +95,15 @@ class TestValidator(TestCase):
                 expected_result = expected_miners[m.ss58]
                 assert(expected_result), f"{test_name} Expected {m.ss58} to not be a miner"
 
+                if expected_result:
+                    uid = modules[m.ss58]["uid"]
+                    ss58 = modules[m.ss58]["key"]
+                    address = modules[m.ss58]["address"]
+
+                    assert(m.uid == uid), f"{test_name} Miner {ss58}: Expected uid {uid}, got {m.uid}"
+                    assert(m.ss58 == ss58), f"{test_name} Miner {ss58}: Expected ss58 {ss58}, got {m.ss58}"
+                    assert(m.address == address), f"{test_name} Miner {ss58}: Expected address {address}, got {m.address}"
+
                 del expected_miners[m.ss58]
 
             # All remaining modules should be false which specifies that it is not
