@@ -163,7 +163,7 @@ class Resume:
 class NltkMiner(BaseMiner):
     def __init__(self):
         super().__init__()
+        self.resume = Resume()
 
     def generate_response(self, prompt: str):
-        self.resume_generator = Resume(job_title_data, skill_list, majors_data)
-        return self.resume_generator.generate_resume(prompt)
+        return self.resume.generate_resume(prompt)
