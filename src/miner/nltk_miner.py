@@ -1,5 +1,6 @@
 import random
 import json
+import re
 from miner.base_miner import BaseMiner
 from datetime import datetime, timedelta
 from collections import Counter
@@ -11,10 +12,12 @@ from datasets import load_dataset
 
 class DataLoader:
     def __init__(self):
-        self.schools = self.load_school_names('data/schools.json')
-        self.majors = [major["name"] for major in self.load_json_data('data/majors.json')["majors"]]
-        self.skills = self.load_skills_data()
-        self.job_titles = self.load_job_title_data()
+        self.data = {
+            'schools': self.load_school_names('src/miner/data/schools.json'),
+            'majors': self.load_majors('src/miner/data/majors.json'),
+            'skills': self.load_skills(),
+            'job_titles': self.load_job_titles()
+        }
 
     def load_json_data(self, file_path):
         with open(file_path, 'r') as file:
@@ -30,16 +33,15 @@ class DataLoader:
 
     def load_job_title_data(self):
         job_title_data = load_dataset("jacob-hugging-face/job-descriptions")
-        return job_title_data["train"]["position_title"]
+        return job_title_data
 
 class RelevanceScorer:
-    def __init__(self, job_titles, skills, majors):
+    def __init__(self, data):
         self.stop_words = set(stopwords.words('english'))
         self.stemmer = PorterStemmer()
-        self.job_titles = job_titles
-        self.skills = skills
-        self.majors = majors
-        self.all_documents = job_titles + skills + majors
+        self.job_titles = job_title_data["train"]["position_title"]
+        self.data = data
+        self.all_documents = data['job_titles']['position_title'] + data['skills'] + data['majors']
         self.idf = self._calculate_idf(self.all_documents)
 
     def preprocess(self, text):
@@ -64,12 +66,14 @@ class RelevanceScorer:
         return scores
 
     def find_relevant_matches(self, job_description, num_jobs=3, num_skills=5, num_majors=1):
-        job_title_scores = self.calculate_relevance(job_description, self.job_titles)
-        skill_scores = self.calculate_relevance(job_description, self.skills)
-        major_scores = self.calculate_relevance(job_description, self.majors)
+        job_title_scores = self.calculate_relevance(job_description, self.data['job_titles']['position_title'])
+        skill_scores = self.calculate_relevance(job_description, self.data['skills'])
+        major_scores = self.calculate_relevance(job_description, self.data['majors'])
 
         def normalize_scores(scores):
             max_score = max(scores.values()) if scores else 1
+            if max_score == 0:
+                return {k: 0 for k in scores}
             return {k: v / max_score for k, v in scores.items()}
 
         job_title_scores = normalize_scores(job_title_scores)
@@ -81,23 +85,23 @@ class RelevanceScorer:
         top_major = sorted(major_scores.items(), key=lambda x: x[1], reverse=True)[:num_majors]
 
         return {
-            'job_titles': [(self.job_titles.index(title), title) for title, score in top_job_titles],
+            'job_titles': [(self.data['job_titles']['position_title'].index(title), title) for title, score in top_job_titles],
             'skills': [skill for skill, score in top_skills],
             'major': [major for major, score in top_major]
         }
 
 class Resume:
-    def __init__(self, job_titles, skills, majors):
-        self.data_loader = DataLoader()
-        self.scorer = RelevanceScorer(job_titles, skills, majors)
+    def __init__(self, data):
+        self.scorer = RelevanceScorer(data)
+        self.data = data
 
-    def get_work_experience(self, job_titles, graduation_year):
+    def get_work_experience(self, relevant_job_titles, graduation_year):
         work_experience = []
         current_year = datetime.now().year
         years_working = random.randint(5, current_year - graduation_year)
         total_days = 365 * years_working
         
-        job_periods = [random.random() for _ in range(len(job_titles))]
+        job_periods = [random.random() for _ in range(len(self.job_titles))]
         sum_periods = sum(job_periods)
         scale_factor = random.uniform(0.7, 1.0)
         normalized_periods = [x / sum_periods * scale_factor for x in job_periods]
@@ -107,10 +111,9 @@ class Resume:
 
         career_start = datetime.now() - timedelta(days=365 * years_working)
         start_date = career_start
-
-        for index, (job_index, title) in enumerate(job_titles):
-            company_name = self.job_title_data["train"]["company_name"][job_index]
-            model_response = json.loads(self.job_title_data["train"]["model_response"][job_index])
+        for index, (job_index, title) in enumerate(relevant_job_titles):
+            company_name = self.data['job_titles']['company_name'][job_index]
+            model_response = json.loads(self.data['job_titles']['model_response'][job_index])
             core_responsibilities = model_response.get("Core Responsibilities", "No core responsibilities found")
 
             job_duration_days = int(work_experience_coefficients[index] * total_days)
@@ -161,7 +164,8 @@ class Resume:
 class NltkMiner(BaseMiner):
     def __init__(self):
         super().__init__()
-        self.resume = Resume()
+        self.data_loader = DataLoader()
+        self.resume = Resume(self.data_loader.data)
 
     def generate_response(self, prompt: str):
         return self.resume.generate_resume(prompt)
