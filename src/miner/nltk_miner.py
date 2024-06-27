@@ -16,7 +16,7 @@ class DataLoader:
             'schools': self.load_school_names('src/miner/data/schools.json'),
             'majors': self.load_majors('src/miner/data/majors.json'),
             'skills': self.load_skills(),
-            'job_titles': self.load_job_titles()
+            'job_title_data': self.load_job_title_data()
         }
 
     def load_json_data(self, file_path):
@@ -35,7 +35,7 @@ class DataLoader:
         skills_data = load_dataset("DrDominikDellermann/SkillsDataset")["train"]["skills"]
         return [item['skill'] for sublist in skills_data for item in sublist]
 
-    def load_job_titles(self):
+    def load_job_title_data(self):
         job_title_data = load_dataset("jacob-hugging-face/job-descriptions")
         return job_title_data
 
@@ -43,9 +43,8 @@ class RelevanceScorer:
     def __init__(self, data):
         self.stop_words = set(stopwords.words('english'))
         self.stemmer = PorterStemmer()
-        self.job_titles = job_title_data["train"]["position_title"]
         self.data = data
-        self.all_documents = data['job_titles']['position_title'] + data['skills'] + data['majors']
+        self.all_documents = data['job_title_data']['train']['position_title'] + data['skills'] + data['majors']
         self.idf = self._calculate_idf(self.all_documents)
 
     def preprocess(self, text):
@@ -70,7 +69,7 @@ class RelevanceScorer:
         return scores
 
     def find_relevant_matches(self, job_description, num_jobs=3, num_skills=5, num_majors=1):
-        job_title_scores = self.calculate_relevance(job_description, self.data['job_titles']['position_title'])
+        job_title_scores = self.calculate_relevance(job_description, self.data['job_title_data']['train']['position_title'])
         skill_scores = self.calculate_relevance(job_description, self.data['skills'])
         major_scores = self.calculate_relevance(job_description, self.data['majors'])
 
@@ -89,7 +88,7 @@ class RelevanceScorer:
         top_major = sorted(major_scores.items(), key=lambda x: x[1], reverse=True)[:num_majors]
 
         return {
-            'job_titles': [(self.data['job_titles']['position_title'].index(title), title) for title, score in top_job_titles],
+            'job_titles': [(self.data['job_title_data']['train']['position_title'].index(title), title) for title, score in top_job_titles],
             'skills': [skill for skill, score in top_skills],
             'major': [major for major, score in top_major]
         }
@@ -105,7 +104,7 @@ class Resume:
         years_working = random.randint(5, current_year - graduation_year)
         total_days = 365 * years_working
         
-        job_periods = [random.random() for _ in range(len(self.job_titles))]
+        job_periods = [random.random() for _ in range(len(relevant_job_titles))]
         sum_periods = sum(job_periods)
         scale_factor = random.uniform(0.7, 1.0)
         normalized_periods = [x / sum_periods * scale_factor for x in job_periods]
@@ -116,8 +115,8 @@ class Resume:
         career_start = datetime.now() - timedelta(days=365 * years_working)
         start_date = career_start
         for index, (job_index, title) in enumerate(relevant_job_titles):
-            company_name = self.data['job_titles']['company_name'][job_index]
-            model_response = json.loads(self.data['job_titles']['model_response'][job_index])
+            company_name = self.data['job_title_data']['train']['company_name'][job_index]
+            model_response = json.loads(self.data['job_title_data']['train']['model_response'][job_index])
             core_responsibilities = model_response.get("Core Responsibilities", "No core responsibilities found")
 
             job_duration_days = int(work_experience_coefficients[index] * total_days)
@@ -139,7 +138,7 @@ class Resume:
     def get_education(self, major, graduation_year):
         education = []
         degree_type = "Bachelor's"
-        school_name = random.choice(self.schools)
+        school_name = random.choice(self.data["schools"])
         degree = {
             "school": school_name,
             "major": major,
