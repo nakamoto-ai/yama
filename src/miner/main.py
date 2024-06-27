@@ -1,11 +1,13 @@
 import argparse
+import uvicorn
+from keylimiter import TokenBucketLimiter
+from urllib.parse import urlparse
 
-from communex.client import CommuneClient
+from communex.module.server import ModuleServer
 from communex.compat.key import classic_load_key
-from communex._common import get_node_url
 
 from config.miner import MinerConfig
-from nltk_miner import NltkMiner
+from miner.nltk_miner import NltkMiner
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="yama miner")
@@ -17,9 +19,14 @@ if __name__ == '__main__':
 
     try:
         keypair = classic_load_key(config.get_key_name())
-        client = CommuneClient(get_node_url(use_testnet=config.get_testnet()))
+        bucket = TokenBucketLimiter(1000, 1 / 100)
 
-        miner = NltkMiner(key=keypair, client=client, url=config.get_miner_url())
-        NltkMiner.start_miner_server(miner=miner)
+        server = ModuleServer(
+             NltkMiner(), keypair, limiter=bucket, subnets_whitelist=[23], use_testnet=config.get_testnet())
+        
+        parsed_url = urlparse(config.get_miner_url())
+
+        app = server.get_fastapi_app()
+        uvicorn.run(app, host=parsed_url.hostname, port=parsed_url.port)
     except ValueError as e:
         print(e)
