@@ -224,7 +224,8 @@ class TestValidator(TestCase):
 
             validator = Validator(key=None, netuid=0, client=None, weight_io=self.mock_weights_io, interval=20)
 
-            result = validator.sync_miners(miners=network_miners).get_all_by_ss58()
+            result_registry = validator.sync_miners(miners=network_miners)
+            result = result_registry.get_all_by_ss58()
 
             # Loop through the result of sync_miners and ensure the data updated correctly.
             for k, v in result.items():
@@ -235,10 +236,15 @@ class TestValidator(TestCase):
                 score = expected[k].score
                 address = expected[k].address
 
-                assert(v.uid == uid), f"{name} Miner {k}: Expected uid {uid}, got {v.uid}"
-                assert(v.ss58 == ss58), f"{name} Miner {k}: Expected ss58 {ss58}, got {v.ss58}"
-                assert(v.score == score), f"{name} Miner {k}: Expected score {score}, got {v.score}"
-                assert(v.address == address), f"{name} Miner {k}: Expected address {address}, got {v.address}"
+                assert(v.uid == uid), f"{name}: Miner {k}: Expected uid {uid}, got {v.uid}"
+                assert(v.ss58 == ss58), f"{name}: Miner {k}: Expected ss58 {ss58}, got {v.ss58}"
+                assert(v.score == score), f"{name}: Miner {k}: Expected score {score}, got {v.score}"
+                assert(v.address == address), f"{name}: Miner {k}: Expected address {address}, got {v.address}"
+
+                del expected[k]
+
+            assert(len(expected) == 0), f"{name}: Expected these miners to be in result: {expected}"
+            
 
 
 
