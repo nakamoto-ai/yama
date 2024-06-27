@@ -19,7 +19,7 @@ if __name__ == '__main__':
         keypair = classic_load_key(config.get_key_name())
         client = CommuneClient(get_node_url(use_testnet=config.get_testnet()))
 
-        miner = NltkMiner(config=config)
+        miner = NltkMiner(key=keypair, client=client)
         NltkMiner.start_miner_server(miner=miner)
     except ValueError as e:
         print(e)

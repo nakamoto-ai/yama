@@ -4,6 +4,11 @@ from base_miner import BaseMiner
 from datetime import datetime, timedelta
 from collections import Counter
 from math import log
+
+from substrateinterface import Keypair
+
+from communex.client import CommuneClient
+
 from faker import Faker
 import nltk
 from nltk.corpus import stopwords
@@ -161,9 +166,8 @@ class Resume:
         return resume
 
 class NltkMiner(BaseMiner):
-    def __init__(self, config):
-        super().__init__()
-        self.config = config
+    def __init__(self, key: Keypair, client: CommuneClient):
+        super().__init__(key=key, client=client)
 
     def generate_response(self, prompt: str):
         self.resume_generator = Resume(job_title_data, skill_list, majors_data)

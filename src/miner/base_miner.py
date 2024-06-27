@@ -8,7 +8,14 @@ from loguru import logger
 from urllib.parse import urlparse
 from abc import abstractmethod
 
+from communex.client import CommuneClient
+
+from substrateinterface import Keypair
+
 class BaseMiner(Module):
+    def __init__(self, key: Keypair, client: CommuneClient):
+        self.key = key 
+        self.client = client 
 
     @endpoint
     def generate(self, prompt: str) -> Dict[str, Any]:
@@ -17,7 +24,7 @@ class BaseMiner(Module):
 
         logger.info(f"Job Description: {prompt}")
 
-        resume = self.generate_resume(prompt)
+        resume = self.generate_response(prompt)
 
         logger.info(f"Generated Resume: {resume}")
 
@@ -28,7 +35,7 @@ class BaseMiner(Module):
         return {"answer": resume}
 
     @abstractmethod
-    def generate_resume(self, prompt: str):
+    def generate_response(self, prompt: str):
         parse_args
     
     @staticmethod
