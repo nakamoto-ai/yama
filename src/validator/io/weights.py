@@ -1,4 +1,5 @@
 import os
+from abc import ABC, abstractmethod
 
 from loguru import logger
 
@@ -6,7 +7,21 @@ from .io import IOInterface
 from comx.miner.registry import MinerRegistry
 from comx.miner.module import ScoredMinerModule
 
-class WeightIO:
+class WeightIOInterface:
+
+    @abstractmethod
+    def validate_weights_file(self):
+        pass
+
+    @abstractmethod
+    def write_weights(self, miner_registry: MinerRegistry):
+        pass
+
+    @abstractmethod
+    def read_weights(self) -> MinerRegistry | None:
+        pass
+
+class WeightIO(WeightIOInterface):
     def __init__(self, io: IOInterface, dir_path: str, file_name: str):
         self.io = io
         self.dir_path: str = dir_path
