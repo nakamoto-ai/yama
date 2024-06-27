@@ -18,7 +18,7 @@ from comx.interface import ComxInterface
 from comx.client import ComxClient
 from comx.miner.module import MinerModule, ScoredMinerModule
 from comx.miner.registry import MinerRegistry
-from validator.io.weights import WeightIO
+from validator.io.weights import WeightIO, WeightIOInterface
 from validator.io.io import IO
 
 class Validator(Module):
@@ -28,7 +28,7 @@ class Validator(Module):
         key: Keypair,
         netuid: int,
         client: ComxInterface,
-        weight_io: WeightIO,
+        weight_io: WeightIOInterface,
         interval: int,
         call_timeout: int = 20,
         use_testnet: bool = False,
