@@ -1,5 +1,11 @@
 import argparse
+
+from communex.client import CommuneClient
+from communex.compat.key import classic_load_key
+from communex._common import get_node_url
+
 from config.miner import MinerConfig
+from nltk_miner import NltkMiner
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="yama miner")
@@ -7,18 +13,13 @@ if __name__ == '__main__':
     parser.add_argument('--ignore-env-file', action='store_true', help='If set, ignore .env file')
     args = parser.parse_args()
     
-    config = MinerConfig(ignore_config_file=False)
+    config = MinerConfig(env_path=args.env, ignore_config_file=False)
 
     try:
-        print(f"KEY_NAME: {config.get_key_name()}")
-        print(f"TESTNET: {config.get_testnet()}")
-        print(f"MINER_URL: {config.get_miner_url()}")
-    except ValueError as e:
-        print(e)
+        keypair = classic_load_key(config.get_key_name())
+        client = CommuneClient(get_node_url(use_testnet=config.get_testnet()))
 
-    if args.miner == "nltk":
-        from nltk_miner.py import NltkMiner
         miner = NltkMiner(config=config)
         NltkMiner.start_miner_server(miner=miner)
-    else:
-        print("Error: Unsupported Miner")
+    except ValueError as e:
+        print(e)
