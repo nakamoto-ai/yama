@@ -4,13 +4,17 @@ from unittest.mock import create_autospec
 from communex.types import ModuleInfoWithOptionalBalance, SubnetParamsWithEmission
 
 from comx.interface import ComxInterface
+from comx.miner.module import MinerModule, ScoredMinerModule
+from comx.miner.registry import MinerRegistry
 
 from validator.main import Validator
+from validator.io.weights import WeightIOInterface
 
 class TestValidator(TestCase):
 
     def setUp(self):
         self.mock_comx = create_autospec(ComxInterface, instance=True)
+        self.mock_weights_io = create_autospec(WeightIOInterface, instance=True)
 
     def test_get_miner_modules(self):
         """
@@ -110,6 +114,132 @@ class TestValidator(TestCase):
             # an expected miner.
             for k, v in expected_miners.items():
                 assert(not v), f"{test_name} Expected miner {k} to be removed"
+
+    def test_sync_miners(self):
+        """
+        Unit tests the Validator sync_miners method using table testing.
+        """
+        test_cases = [
+            {
+                "name": "Test 1: Network and local miners match",
+                "network_miners": [
+                    MinerModule(uid=1, ss58="a", address="0.0.0.0:0"),
+                    MinerModule(uid=2, ss58="b", address="0.0.0.0:1")
+                ],
+                "file_miners": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500)
+                ],
+                "expected": {
+                    "a": ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    "b": ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500)
+                }
+            },
+            {
+                "name": "Test 2: Miner deregistered",
+                "network_miners": [
+                    MinerModule(uid=1, ss58="a", address="0.0.0.0:0"),
+                    MinerModule(uid=2, ss58="b", address="0.0.0.0:1")
+                ],
+                "file_miners": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=1000)
+                ],
+                "expected": {
+                    "a": ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    "b": ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500)
+                }
+            },
+            {
+                "name": "Test 3: New miner registers",
+                "network_miners": [
+                    MinerModule(uid=1, ss58="a", address="0.0.0.0:0"),
+                    MinerModule(uid=2, ss58="b", address="0.0.0.0:1"),
+                    MinerModule(uid=3, ss58="c", address="0.0.0.0:2")
+                ],
+                "file_miners": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500)
+                ],
+                "expected": {
+                    "a": ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    "b": ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500),
+                    "c": ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=0)
+                }
+            },
+            {
+                "name": "Test 4: Miner address changes",
+                "network_miners": [
+                    MinerModule(uid=1, ss58="a", address="0.0.0.0:0"),
+                    MinerModule(uid=2, ss58="b", address="0.0.0.0:5000")
+                ],
+                "file_miners": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500)
+                ],
+                "expected": {
+                    "a": ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    "b": ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:5000", score=500)
+                }
+            },
+            {
+                "name": "Test 5: Miner uid changes",
+                "network_miners": [
+                    MinerModule(uid=4, ss58="a", address="0.0.0.0:0"),
+                    MinerModule(uid=1, ss58="b", address="0.0.0.0:1"),
+                    MinerModule(uid=3, ss58="c", address="0.0.0.0:2"),
+                    MinerModule(uid=2, ss58="d", address="0.0.0.0:3")
+                ],
+                "file_miners": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=900),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=500),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=700),
+                    ScoredMinerModule(uid=4, ss58="d", address="0.0.0.0:3", score=350)
+                ],
+                "expected": {
+                    "a": ScoredMinerModule(uid=4, ss58="a", address="0.0.0.0:0", score=900),
+                    "b": ScoredMinerModule(uid=1, ss58="b", address="0.0.0.0:1", score=500),
+                    "c": ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=700),
+                    "d": ScoredMinerModule(uid=2, ss58="d", address="0.0.0.0:3", score=350)
+                }
+            }
+        ]
+
+        for tc in test_cases:
+            name: str = tc["name"]
+            network_miners: list[MinerModule] = tc["network_miners"]
+            file_miners: list[ScoredMinerModule] = tc["file_miners"]
+            expected: dict[str, ScoredMinerModule] = tc["expected"]
+
+            file_registry = MinerRegistry()
+            for m in file_miners:
+                file_registry.set(m)
+
+            def mock_read_weights():
+                nonlocal file_registry
+                return file_registry
+            
+            self.mock_weights_io.read_weights.side_effect = mock_read_weights
+
+            validator = Validator(key=None, netuid=0, client=None, weight_io=self.mock_weights_io, interval=20)
+
+            result = validator.sync_miners(miners=network_miners).get_all_by_ss58()
+
+            # Loop through the result of sync_miners and ensure the data updated correctly.
+            for k, v in result.items():
+                assert(k in expected), f"{name} Expected miner '{k}' to be in result registry"
+
+                uid = expected[k].uid
+                ss58 = expected[k].ss58
+                score = expected[k].score
+                address = expected[k].address
+
+                assert(v.uid == uid), f"{name} Miner {k}: Expected uid {uid}, got {v.uid}"
+                assert(v.ss58 == ss58), f"{name} Miner {k}: Expected ss58 {ss58}, got {v.ss58}"
+                assert(v.score == score), f"{name} Miner {k}: Expected score {score}, got {v.score}"
+                assert(v.address == address), f"{name} Miner {k}: Expected address {address}, got {v.address}"
+
 
 
 
