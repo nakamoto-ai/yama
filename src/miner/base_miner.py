@@ -1,16 +1,15 @@
 import time
-from communex.module import Module, endpoint
-from loguru import logger
 from abc import abstractmethod
-
 from typing import Dict, Any
+from loguru import logger
+from communex.module import Module, endpoint
 
 class BaseMiner(Module):
 
     @endpoint
     def generate(self, prompt: str) -> Dict[str, Any]:
         start_time = time.time()
-        logger.info(f"Generating resume... ")
+        logger.info("Generating resume... ")
 
         logger.info(f"Job Description: {prompt}")
 
