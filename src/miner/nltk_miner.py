@@ -126,43 +126,59 @@ class Resume:
         self.scorer = RelevanceScorer(data)
         self.data = data
 
+    def get_scaled_periods(self, num_jobs, scale_factor):
+        job_periods = [random.random() for _ in range(num_jobs)]
+        sum_periods = sum(job_periods)
+        return [x / sum_periods * scale_factor for x in job_periods]
+
+    def get_job_info(self, job_index, data):
+        company_name = data['job_title_data']['train']['company_name'][job_index]
+        model_response = json.loads(data['job_title_data']['train']['model_response'][job_index])
+        core_responsibilities = model_response.get(
+            "Core Responsibilities",
+            "No core responsibilities found"
+        )
+        return company_name, core_responsibilities
+
+    def create_job_entry(self, title, company_name, start_date, end_date, core_responsibilities):
+        return {
+            "job_title": title,
+            "company": company_name,
+            "start_date": start_date.strftime('%m-%Y'),
+            "end_date": end_date.strftime('%m-%Y'),
+            "summary": core_responsibilities
+        }
+
     def get_work_experience(self, relevant_job_titles, graduation_year):
         work_experience = []
         current_year = datetime.now().year
         years_working = random.randint(5, current_year - graduation_year)
         total_days = 365 * years_working
 
-        job_periods = [random.random() for _ in range(len(relevant_job_titles))]
-        sum_periods = sum(job_periods)
-        scale_factor = random.uniform(0.7, 1.0)
-        normalized_periods = [x / sum_periods * scale_factor for x in job_periods]
+        normalized_periods = self.get_scaled_periods(
+            len(relevant_job_titles),
+            random.uniform(0.7, 1.0)
+        )
         time_not_working = 1 - sum(normalized_periods)
-
         work_experience_coefficients = normalized_periods + [time_not_working]
 
-        career_start = datetime.now() - timedelta(days=365 * years_working)
+        career_start = datetime.now() - timedelta(days=total_days)
         start_date = career_start
+
         for index, (job_index, title) in enumerate(relevant_job_titles):
-            company_name = self.data['job_title_data']['train']['company_name'][job_index]
-            model_response = json.loads(
-                self.data['job_title_data']['train']['model_response'][job_index]
-            )
-            core_responsibilities = model_response.get(
-                "Core Responsibilities", 
-                "No core responsibilities found"
-            )
-
+            company_name, core_responsibilities = self.get_job_info(job_index, self.data)
             job_duration_days = int(work_experience_coefficients[index] * total_days)
-
             end_date = start_date + timedelta(days=job_duration_days)
-            job = {
-                "job_title": title,
-                "company": company_name,
-                "start_date": start_date.strftime('%m-%Y'),
-                "end_date": end_date.strftime('%m-%Y'),
-                "summary": core_responsibilities
-            }
+
+            job = self.create_job_entry(
+                title,
+                company_name,
+                start_date,
+                end_date,
+                core_responsibilities
+            )
             work_experience.append(job)
+
             gap_days = random.randint(0, int(work_experience_coefficients[-1] * total_days / 3))
             start_date = end_date + timedelta(days=gap_days)
 
