@@ -1,11 +1,9 @@
 import argparse
+from urllib.parse import urlparse
 import uvicorn
 from keylimiter import TokenBucketLimiter
-from urllib.parse import urlparse
-
 from communex.module.server import ModuleServer
 from communex.compat.key import classic_load_key
-
 from config.miner import MinerConfig
 from miner.nltk_miner import NltkMiner
 
