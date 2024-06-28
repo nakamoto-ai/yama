@@ -140,15 +140,6 @@ class Resume:
         )
         return company_name, core_responsibilities
 
-    def create_job_entry(self, title, company_name, start_date, end_date, core_responsibilities):
-        return {
-            "job_title": title,
-            "company": company_name,
-            "start_date": start_date.strftime('%m-%Y'),
-            "end_date": end_date.strftime('%m-%Y'),
-            "summary": core_responsibilities
-        }
-
     def get_work_experience(self, relevant_job_titles, graduation_year):
         work_experience = []
         current_year = datetime.now().year
@@ -166,21 +157,17 @@ class Resume:
         start_date = career_start
 
         for index, (job_index, title) in enumerate(relevant_job_titles):
-            company_name, core_responsibilities = self.get_job_info(job_index, self.data)
+            job = {}
+            job["title"] = title
+            job["company_name"], job["summary"] = self.get_job_info(job_index, self.data)
+            job["start_date"] = start_date.strftime('%m-%Y')
             job_duration_days = int(work_experience_coefficients[index] * total_days)
-            end_date = start_date + timedelta(days=job_duration_days)
-
-            job = self.create_job_entry(
-                title,
-                company_name,
-                start_date,
-                end_date,
-                core_responsibilities
-            )
+            job["end_date"] = (start_date + timedelta(days=job_duration_days)).strftime('%m-%Y')
+            
             work_experience.append(job)
 
             gap_days = random.randint(0, int(work_experience_coefficients[-1] * total_days / 3))
-            start_date = end_date + timedelta(days=gap_days)
+            start_date = job["end_date"] + timedelta(days=gap_days)
 
         return work_experience
 
