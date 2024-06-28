@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 from abc import ABC, abstractmethod
 
 from communex.types import SubnetParamsWithEmission, ModuleInfoWithOptionalBalance

@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 class MinerModule:
     def __init__(self, uid: int, ss58: str, address: str):
         self.uid = uid

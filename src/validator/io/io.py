@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 import os 
 import json
 from typing import Any

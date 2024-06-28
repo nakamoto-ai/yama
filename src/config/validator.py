@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 from .base import BaseConfig
 
 ENV_VALIDATOR_INTERVAL = "VALIDATOR_INTERVAL"
