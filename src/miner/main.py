@@ -20,10 +20,10 @@ if __name__ == '__main__':
         bucket = TokenBucketLimiter(1000, 1 / 100)
 
         server = ModuleServer(
-             NltkMiner(), 
-             keypair, 
-             limiter=bucket, 
-             subnets_whitelist=[23], 
+             NltkMiner(),
+             keypair,
+             limiter=bucket,
+             subnets_whitelist=[23],
              use_testnet=config.get_testnet()
         )
 
