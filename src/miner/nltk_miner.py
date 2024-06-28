@@ -1,14 +1,13 @@
 import random
 import json
 import re
-from miner.base_miner import BaseMiner
 from datetime import datetime, timedelta
 from collections import Counter
 from math import log
-
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
+from miner.base_miner import BaseMiner
 
 class DataLoader:
     def __init__(self):
