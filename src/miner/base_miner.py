@@ -1,9 +1,8 @@
 import time
-from communex.module import Module, endpoint
-from loguru import logger
 from abc import abstractmethod
-
 from typing import Dict, Any
+from loguru import logger
+from communex.module import Module, endpoint
 
 class BaseMiner(Module):
 
