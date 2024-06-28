@@ -19,7 +19,7 @@ class DataLoader:
         }
 
     def load_json_data(self, file_path):
-        with open(file_path, 'r') as file:
+        with open(file_path, 'r', encoding="utf-8") as file:
             return json.load(file)
 
     def load_school_names(self, file_path):
