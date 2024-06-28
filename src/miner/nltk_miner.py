@@ -167,7 +167,7 @@ class Resume:
             work_experience.append(job)
 
             gap_days = random.randint(0, int(work_experience_coefficients[-1] * total_days / 3))
-            start_date = job["end_date"] + timedelta(days=gap_days)
+            start_date = start_date + timedelta(days=job_duration_days) + timedelta(days=gap_days)
 
         return work_experience
 
