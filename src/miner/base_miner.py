@@ -9,7 +9,7 @@ class BaseMiner(Module):
     @endpoint
     def generate(self, prompt: str) -> Dict[str, Any]:
         start_time = time.time()
-        logger.info(f"Generating resume... ")
+        logger.info("Generating resume... ")
 
         logger.info(f"Job Description: {prompt}")
 
