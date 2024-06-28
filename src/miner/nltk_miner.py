@@ -44,20 +44,24 @@ class RelevanceScorer:
         self.stop_words = set(stopwords.words('english'))
         self.stemmer = PorterStemmer()
         self.data = data
-        self.all_documents = data['job_title_data']['train']['position_title'] + data['skills'] + data['majors']
+        self.all_documents = (
+            data['job_title_data']['train']['position_title'] +
+            data['skills'] +
+            data['majors']
+        )
         self.idf = self._calculate_idf(self.all_documents)
 
     def preprocess(self, text):
         words = re.findall(r'\w+', text.lower())
         return [self.stemmer.stem(word) for word in words if word not in self.stop_words]
-    
+
     def _calculate_idf(self, documents):
         num_docs = len(documents)
         word_in_docs = Counter()
         for doc in documents:
             word_in_docs.update(set(self.preprocess(doc)))
         return {word: log(num_docs / (count + 1)) for word, count in word_in_docs.items()}
-    
+
     def calculate_relevance(self, text, documents):
         text_words = self.preprocess(text)
         text_word_count = Counter(text_words)
@@ -69,9 +73,18 @@ class RelevanceScorer:
         return scores
 
     def find_relevant_matches(self, job_description, num_jobs=3, num_skills=5, num_majors=1):
-        job_title_scores = self.calculate_relevance(job_description, self.data['job_title_data']['train']['position_title'])
-        skill_scores = self.calculate_relevance(job_description, self.data['skills'])
-        major_scores = self.calculate_relevance(job_description, self.data['majors'])
+        job_title_scores = self.calculate_relevance(
+            job_description,
+            self.data['job_title_data']['train']['position_title']
+        )
+        skill_scores = self.calculate_relevance(
+            job_description,
+            self.data['skills']
+        )
+        major_scores = self.calculate_relevance(
+            job_description,
+            self.data['majors']
+        )
 
         def normalize_scores(scores):
             max_score = max(scores.values()) if scores else 1
@@ -83,12 +96,28 @@ class RelevanceScorer:
         skill_scores = normalize_scores(skill_scores)
         major_scores = normalize_scores(major_scores)
 
-        top_job_titles = sorted(job_title_scores.items(), key=lambda x: x[1], reverse=True)[:num_jobs]
-        top_skills = sorted(skill_scores.items(), key=lambda x: x[1], reverse=True)[:num_skills]
-        top_major = sorted(major_scores.items(), key=lambda x: x[1], reverse=True)[:num_majors]
+        top_job_titles = sorted(
+            job_title_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:num_jobs]
+        top_skills = sorted(
+            skill_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:num_skills]
+        top_major = sorted(major_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:num_majors]
 
         return {
-            'job_titles': [(self.data['job_title_data']['train']['position_title'].index(title), title) for title, score in top_job_titles],
+            'job_titles': [(
+                    self.data['job_title_data']['train']['position_title'].index(title),
+                    title
+                )
+                for title, score in top_job_titles
+            ],
             'skills': [skill for skill, score in top_skills],
             'major': [major for major, score in top_major]
         }
@@ -103,7 +132,7 @@ class Resume:
         current_year = datetime.now().year
         years_working = random.randint(5, current_year - graduation_year)
         total_days = 365 * years_working
-        
+
         job_periods = [random.random() for _ in range(len(relevant_job_titles))]
         sum_periods = sum(job_periods)
         scale_factor = random.uniform(0.7, 1.0)
@@ -116,8 +145,13 @@ class Resume:
         start_date = career_start
         for index, (job_index, title) in enumerate(relevant_job_titles):
             company_name = self.data['job_title_data']['train']['company_name'][job_index]
-            model_response = json.loads(self.data['job_title_data']['train']['model_response'][job_index])
-            core_responsibilities = model_response.get("Core Responsibilities", "No core responsibilities found")
+            model_response = json.loads(
+                self.data['job_title_data']['train']['model_response'][job_index]
+            )
+            core_responsibilities = model_response.get(
+                "Core Responsibilities", 
+                "No core responsibilities found"
+            )
 
             job_duration_days = int(work_experience_coefficients[index] * total_days)
 
@@ -132,7 +166,7 @@ class Resume:
             work_experience.append(job)
             gap_days = random.randint(0, int(work_experience_coefficients[-1] * total_days / 3))
             start_date = end_date + timedelta(days=gap_days)
-        
+
         return work_experience
 
     def get_education(self, major, graduation_year):
