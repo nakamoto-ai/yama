@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser.add_argument("--env", type=str, default=".env", help="config file path")
     parser.add_argument('--ignore-env-file', action='store_true', help='If set, ignore .env file')
     args = parser.parse_args()
-    
+
     config = MinerConfig(env_path=args.env, ignore_config_file=False)
 
     try:
@@ -22,8 +22,13 @@ if __name__ == '__main__':
         bucket = TokenBucketLimiter(1000, 1 / 100)
 
         server = ModuleServer(
-             NltkMiner(), keypair, limiter=bucket, subnets_whitelist=[23], use_testnet=config.get_testnet())
-        
+             NltkMiner(), 
+             keypair, 
+             limiter=bucket, 
+             subnets_whitelist=[23], 
+             use_testnet=config.get_testnet()
+        )
+
         parsed_url = urlparse(config.get_miner_url())
 
         app = server.get_fastapi_app()
