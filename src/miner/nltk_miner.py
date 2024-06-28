@@ -142,9 +142,7 @@ class Resume:
 
     def get_work_experience(self, relevant_job_titles, graduation_year):
         work_experience = []
-        current_year = datetime.now().year
-        years_working = random.randint(5, current_year - graduation_year)
-        total_days = 365 * years_working
+        total_days = 365 * random.randint(5, datetime.now().year - graduation_year)
 
         normalized_periods = self.get_scaled_periods(
             len(relevant_job_titles),
@@ -153,8 +151,7 @@ class Resume:
         time_not_working = 1 - sum(normalized_periods)
         work_experience_coefficients = normalized_periods + [time_not_working]
 
-        career_start = datetime.now() - timedelta(days=total_days)
-        start_date = career_start
+        start_date = datetime.now() - timedelta(days=total_days)
 
         for index, (job_index, title) in enumerate(relevant_job_titles):
             job = {}
