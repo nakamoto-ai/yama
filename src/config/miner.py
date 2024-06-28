@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 from .base import BaseConfig
 
 ENV_MINER_URL = "MINER_URL"

@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 from comx.interface import ComxInterface
 
 from communex.client import CommuneClient
@@ -13,7 +17,7 @@ class ComxClient(ComxInterface):
         self, 
         netuid: int = 0, 
         include_balances: bool = False) -> dict[str, ModuleInfoWithOptionalBalance]:
-        
+
         return get_map_modules(self.client, netuid, include_balances)
     
     def get_subnet_params(

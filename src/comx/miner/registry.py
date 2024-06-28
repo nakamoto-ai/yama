@@ -1,3 +1,7 @@
+"""
+Author: Eddie
+"""
+
 from typing import List
 
 from .module import ScoredMinerModule
