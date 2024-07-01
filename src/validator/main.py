@@ -25,6 +25,7 @@ from comx.miner.registry import MinerRegistry
 from validator.io.weights import WeightIO, WeightIOInterface
 from validator.io.io import IO
 
+
 class Validator(Module):
 
     def __init__(
@@ -93,7 +94,7 @@ class Validator(Module):
 
         # Get the current block
         current_block = self.client.get_current_block()
-        
+
         miners: list[MinerModule] = []
 
         # Loop through the modules and append miners to the miner list
@@ -101,10 +102,10 @@ class Validator(Module):
             uid = m['uid']
             ss58 = m['key']
             address = m['address']
-            
+
             # Always ignore yourself
             if uid == self.uid:
-                continue 
+                continue
 
             last_update = m['last_update']
             reg_block = m['regblock']
@@ -113,7 +114,7 @@ class Validator(Module):
                 miners.append(MinerModule(uid=uid, ss58=ss58, address=address))
 
         return miners
-    
+
     def is_miner(self, last_update: int, reg_block: int, max_weight_age: int, current_block: int) -> bool:
         if last_update == reg_block:
             # Its possible a validator just registered and hasn't scored miners yet.
@@ -125,10 +126,10 @@ class Validator(Module):
             # but that means the validator is sleeping. Validator will begin to score 0's as a
             # miner unless it wakes up and starts validating again.
             if last_update + max_weight_age < current_block:
-                return True 
-            
+                return True
+
             return False
-        
+
     def sync_miners(self, miners: list[MinerModule]) -> MinerRegistry:
         """
         Syncs the miners registered on the network with the persisted miners in the
@@ -166,7 +167,7 @@ class Validator(Module):
             ))
 
         return new_registry
-    
+
     def sync_cache(self, registry: MinerRegistry):
         """
         Syncs the cached miners that already been queried with the contents of 
@@ -204,13 +205,16 @@ class Validator(Module):
                 score=updated_miner.score
             ))
 
-    def next_miners(self, registry: MinerRegistry) -> MinerRegistry:
+    def next_miners(self, registry: MinerRegistry, count: int = 8) -> MinerRegistry:
         """
         Determines and returns the next miners that should be queried. It chooses
-        up to 8 miners that have not yet been queried for this voting cycle.
+        up to the count amount that have not yet been queried for this voting cycle.
 
         Args:
-            registry: The MinerRegistry representing the current state of the network.
+            registry: 
+                The MinerRegistry representing the current state of the network.
+            count:
+                The maximum number of miners that should be returned. Defaults to 8.
 
         Returns:
             A MinerRegistry containing the miners that should be queried next.
@@ -223,16 +227,16 @@ class Validator(Module):
 
             # If miner was already queried skip and go to the next.
             if queried_miner is not None:
-                continue 
+                continue
 
             next_miners.set(v)
             counter += 1
 
-            if counter == 8:
+            if counter == count:
                 break
-        
+
         return next_miners
-    
+
     def query(self, miners: MinerRegistry):
         """
         Takes a list of miners that should be queried.
@@ -278,23 +282,24 @@ class Validator(Module):
                 address=v.address,
                 score=v.score
             ))
-    
+
     def set_weights(self):
         pass
 
     def validation_loop(self) -> None:
         while True:
             uid = self.get_validator_uid()
-            self.uid = uid 
+            self.uid = uid
 
             if self.uid != -1:
                 logger.info("Begin validator step... ")
                 asyncio.run(self.validate_step())
             else:
                 logger.info("Validator not registered, skipping step...")
-    
+
             logger.info(f"Sleeping for {self.interval} seconds... ")
             time.sleep(self.interval)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="yama validator")
@@ -325,4 +330,3 @@ if __name__ == '__main__':
         validator.validation_loop()
     except ValueError as e:
         print(e)
-
