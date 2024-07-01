@@ -503,3 +503,97 @@ class TestValidator(TestCase):
 
             expected_registry_dict = expected_registry.to_ss58_dict()
             assert (len(expected_registry_dict) == 0), f"{name}: Missing miners in next_miners registry"
+
+    def test_cache(self):
+        """
+        Unit tests the Validator cache method using table testing.
+        """
+        test_cases = [
+            {
+                "name": "Test 1: Empty Cache",
+                "cache": [],
+                "miners": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=100),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=200),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=300)
+                ],
+                "expected": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=100),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=200),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=300)
+                ]
+            },
+            {
+                "name": "Test 2: Cache contains some miners",
+                "cache": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=100),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=200),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=300)
+                ],
+                "miners": [
+                    ScoredMinerModule(uid=4, ss58="d", address="0.0.0.0:3", score=0),
+                    ScoredMinerModule(uid=5, ss58="e", address="0.0.0.0:4", score=0),
+                    ScoredMinerModule(uid=6, ss58="f", address="0.0.0.0:5", score=0)
+                ],
+                "expected": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=100),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=200),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=300),
+                    ScoredMinerModule(uid=4, ss58="d", address="0.0.0.0:3", score=0),
+                    ScoredMinerModule(uid=5, ss58="e", address="0.0.0.0:4", score=0),
+                    ScoredMinerModule(uid=6, ss58="f", address="0.0.0.0:5", score=0)
+                ]
+            },
+            {
+                "name": "Test 3: No miners queried",
+                "cache": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=100),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=200),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=300)
+                ],
+                "miners": [],
+                "expected": [
+                    ScoredMinerModule(uid=1, ss58="a", address="0.0.0.0:0", score=100),
+                    ScoredMinerModule(uid=2, ss58="b", address="0.0.0.0:1", score=200),
+                    ScoredMinerModule(uid=3, ss58="c", address="0.0.0.0:2", score=300)
+                ]
+            }
+        ]
+
+        for tc in test_cases:
+            name: str = tc["name"]
+            cache: list[ScoredMinerModule] = tc["cache"]
+            miners: list[ScoredMinerModule] = tc["miners"]
+            expected: list[ScoredMinerModule] = tc["expected"]
+
+            cache_registry = MinerRegistry()
+            miner_registry = MinerRegistry()
+            expected_registry = MinerRegistry()
+
+            [cache_registry.set(miner) for miner in cache]
+            [miner_registry.set(miner) for miner in miners]
+            [expected_registry.set(miner) for miner in expected]
+
+            validator = Validator(key=None, netuid=0, client=None, weight_io=None, interval=20)
+            validator.queried_miners = cache_registry
+
+            validator.cache(miners=miner_registry)
+            result_dict = validator.queried_miners.get_all_by_ss58()
+            for k, v in result_dict.items():
+                expected_miner = expected_registry.get_by_ss58(k)
+                assert (expected_miner is not None), f"{name}: Did not expect miner {k}"
+
+                uid = expected_miner.uid
+                ss58 = expected_miner.ss58
+                score = expected_miner.score
+                address = expected_miner.address
+
+                assert (v.uid == uid), f"{name}: Miner {k}: Expected uid {uid}, got {v.uid}"
+                assert (v.ss58 == ss58), f"{name}: Miner {k}: Expected ss58 {ss58}, got {v.ss58}"
+                assert (v.score == score), f"{name}: Miner {k}: Expected score {score}, got {v.score}"
+                assert (v.address == address), f"{name}: Miner {k}: Expected address {address}, got {v.address}"
+
+                expected_registry.delete_by_ss58(k)
+
+            expected_registry_dict = expected_registry.to_ss58_dict()
+            assert (len(expected_registry_dict) == 0), f"{name}: Missing miners in result_dict"
