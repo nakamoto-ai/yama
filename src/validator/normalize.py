@@ -2,7 +2,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import Dict, List
 from hugging_data import get_degree_majors, get_degree_type_mappings, get_job_title_mappings
 
 
