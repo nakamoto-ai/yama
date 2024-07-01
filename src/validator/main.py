@@ -269,10 +269,14 @@ class Validator(Module):
     def cache(self, miners: MinerRegistry):
         """
         Takes a MinerRegistry containing the queried and scored miners for
-        this voting cycle and caches the data in queried_miners.
+        this validator step and caches the data in queried_miners. The miners
+        parameter should only contain the miners that need to be appended to
+        the cache, queried_miners.
 
         Args:
-            miners: The MinerRegistry containing all the queried and scored miners.
+            miners: 
+                The MinerRegistry containing the queried and scored miners for
+                the current validator step.
         """
         miners_dict = miners.get_all_by_uid()
         for k, v in miners_dict.items():
