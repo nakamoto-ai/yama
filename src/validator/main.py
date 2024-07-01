@@ -16,12 +16,16 @@ from communex._common import get_node_url
 from substrateinterface import Keypair
 
 from loguru import logger
+from typing import Any, Dict, List
 
 from config.validator import ValidatorConfig
 from comx.interface import ComxInterface
 from comx.client import ComxClient
 from comx.miner.module import MinerModule, ScoredMinerModule
 from comx.miner.registry import MinerRegistry
+from job_description import JobDescription
+from resume_extract import ResumeExtractor
+from skills import JDSkills
 from validator.io.weights import WeightIO, WeightIOInterface
 from validator.io.io import IO
 
@@ -47,6 +51,8 @@ class Validator(Module):
         self.use_testnet = use_testnet
         self.uid = None
         self.queried_miners: MinerRegistry = MinerRegistry()
+        self.jd_keys = JobDescription
+        self.job_description = {}
 
     def get_validator_uid(self) -> int:
         modules = self.client.get_map_modules(self.netuid, False)
@@ -63,7 +69,9 @@ class Validator(Module):
 
         next_miners = self.next_miners(registry=new_registry)
 
-        self.query(miners=next_miners)
+        self.job_description = self.get_job_description()
+        resumes = self.query(miners=next_miners)
+        skills_df, universal_skills_weights, preferred_skills_weights = self.process_job_description()
         self.score(miners=next_miners)
         self.cache(miners=next_miners)
 
@@ -245,6 +253,11 @@ class Validator(Module):
         miners_dict = miners.get_all_by_uid()
         for k, v in miners_dict.items():
             print(f"UID: {k}, Values: {v}")
+        self.serve_miners_prompt(self.job_description)
+        resumes = self.get_resumes_from_miners(self.job_description)
+        extracted_resumes = self.extract_resumes(resumes)
+        return extracted_resumes
+
 
     def score(self, miners: MinerRegistry):
         """
@@ -295,6 +308,35 @@ class Validator(Module):
     
             logger.info(f"Sleeping for {self.interval} seconds... ")
             time.sleep(self.interval)
+
+    def get_resumes_from_miners(self, job_description):
+        # TODO: Get all of the raw resume from the miners after prompting with job description
+        resumes_from_miners: List[Dict[Any]] = []
+        return resumes_from_miners
+
+    def extract_resumes(self, miner_resumes):
+        resume_extractor = ResumeExtractor()
+        new_miner_resumes = {}
+        for uid, miner_resume in miner_resumes.items():
+            resume_extractor.resume_data = miner_resume
+            extracted_resume = resume_extractor.get_segments()
+            new_miner_resumes[uid] = extracted_resume
+        return new_miner_resumes
+
+    def serve_miners_prompt(self):
+        # TODO: step where validator serves the miners a job description
+        pass
+
+    def process_job_description(self):
+        job_description = self.job_description
+        skills_df = self.jd_keys.get_skills_dataframe()
+        jd_skills = JDSkills(skills_df, job_description)
+        universal_skills_weights, preferred_skills_weights = jd_skills.get_skills_weights()
+        return skills_df, universal_skills_weights, preferred_skills_weights
+
+    def get_job_description(self):
+        return self.jd_keys.get_random_jd()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="yama validator")
