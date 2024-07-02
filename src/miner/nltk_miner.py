@@ -182,7 +182,7 @@ class Resume:
 
     def get_work_experience(self, relevant_job_titles, graduation_year):
         work_experience = []
-        total_days = 365 * random.randint(5, datetime.now().year - graduation_year)
+        total_days = 365 * random.randint(5, datetime.now().year - graduation_year + 1)
 
         normalized_periods = self.get_scaled_periods(
             len(relevant_job_titles),
@@ -196,7 +196,7 @@ class Resume:
         for index, (job_index, title) in enumerate(relevant_job_titles):
             job = {}
             job["title"] = title
-            job["company_name"], job["summary"] = self.get_job_info(job_index, self.data)
+            job["company_name"], job["description"] = self.get_job_info(job_index, self.data)
             job["start_date"] = start_date.strftime('%m-%Y')
             job_duration_days = int(work_experience_coefficients[index] * total_days)
             job["end_date"] = (start_date + timedelta(days=job_duration_days)).strftime('%m-%Y')
@@ -212,11 +212,13 @@ class Resume:
         education = []
         degree_type = "Bachelor's"
         school_name = random.choice(self.data["schools"])
+        graduation_month = random.choice(["05", "12"])
         degree = {
             "school": school_name,
             "major": major,
             "degree": degree_type,
-            "graduation_date": graduation_year
+            "start_date": f"0{random.randint(7,9)}-{graduation_year - 4}",
+            "end_date": f"{graduation_month}-{graduation_year}"
         }
         education.append(degree)
         return education
