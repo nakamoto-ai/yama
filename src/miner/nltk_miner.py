@@ -10,6 +10,27 @@ from datasets import load_dataset
 from miner.base_miner import BaseMiner
 
 class DataLoader:
+    """
+    A class for loading and managing various datasets related to schools, majors,
+    skills, and job titles.
+
+    This class provides methods to load data from JSON files and external datasets,
+    and stores the loaded data in a dictionary for use in Resume().
+
+    Attributes:
+        data (dict): A dictionary containing the loaded datasets:
+            - 'schools': List of school names
+            - 'majors': List of major names
+            - 'skills': List of skills
+            - 'job_title_data': Dataset containing job title information
+
+    Methods:
+        load_json_data(file_path): Load data from a JSON file
+        load_school_names(file_path): Load school names from a JSON file
+        load_majors(file_path): Load major names from a JSON file
+        load_skills(): Load skills from an external dataset
+        load_job_title_data(): Load job title data from an external dataset
+    """
     def __init__(self):
         self.data = {
             'schools': self.load_school_names('src/miner/data/schools.json'),
@@ -19,10 +40,29 @@ class DataLoader:
         }
 
     def load_json_data(self, file_path):
+        """
+        Load data from a JSON file
+
+        Args:
+            file_path (str): The path to the JSON file to be loaded.
+
+        Returns:
+            dict: The parsed JSON data as a Python dictionary.
+
+        Raises:
+            FileNotFoundError: If the specified file is not found.
+            json.JSONDecodeError: If the file contains invalid JSON.
+        """
         with open(file_path, 'r', encoding="utf-8") as file:
             return json.load(file)
 
     def load_school_names(self, file_path):
+        """
+        Load school names from a JSON file
+
+        Args:
+            file_path (str): The path to a JSON file with a school name
+        """
         data = self.load_json_data(file_path)
         return [school["name"] for school in data["results"]]
 
