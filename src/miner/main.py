@@ -1,3 +1,6 @@
+"""
+Authors: Miller and Eddie
+"""
 import argparse
 from urllib.parse import urlparse
 import uvicorn
@@ -10,6 +13,7 @@ from miner.nltk_miner import NltkMiner
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="yama miner")
     parser.add_argument("--env", type=str, default=".env", help="config file path")
+    parser.add_argument("--miner", type=str, default="nltk", help="miner type")
     parser.add_argument('--ignore-env-file', action='store_true', help='If set, ignore .env file')
     args = parser.parse_args()
 
@@ -19,8 +23,17 @@ if __name__ == '__main__':
         keypair = classic_load_key(config.get_key_name())
         bucket = TokenBucketLimiter(1000, 1 / 100)
 
+        if args.miner == "nltk":
+            miner = NltkMiner()
+        elif args.miner == "t5":
+            from miner.t5_miner import T5Miner
+            miner = T5Miner()
+        else:
+            miner = NltkMiner()
+            print("Unsupported miner, defaulting to NltkMiner")
+
         server = ModuleServer(
-             NltkMiner(),
+             miner,
              keypair,
              limiter=bucket,
              subnets_whitelist=[23],
