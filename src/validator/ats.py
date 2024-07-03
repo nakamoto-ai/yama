@@ -18,7 +18,10 @@ sample_job_description = {
     "certifications": [
         "Certified ScrumMaster (CSM)",
         "AWS Certified Solutions Architect"
-    ]
+    ],
+    "skills_df": None,  # Placeholder, this should be the actual DataFrame
+    "universal_skills_weights": None,  # Placeholder, this should be the actual weights
+    "preferred_skills_weights": None  # Placeholder, this should be the actual weights
 }
 
 class ATS:
@@ -39,7 +42,6 @@ class ATS:
             elif edu_index == job_index - 1 or edu_index == job_index + 2:
                 score += 0.25
         return score
-
 
     def score_experience(self, min_years_experience, resume_experience):
         score = 0
@@ -65,8 +67,7 @@ class ATS:
 
         return score
 
-
-    def score_skills(self, jd_skills, resume_skills):
+    def score_skills(self, jd_skills, resume_skills, skills_df, universal_skills_weights, preferred_skills_weights):
         universal_skills = defaultdict(int)
         self.resume_extractor.process_skills(jd_skills, universal_skills)
 
@@ -79,11 +80,20 @@ class ATS:
         if max_jd_score > 0:
             score_percentage = resume_score / max_jd_score
             if score_percentage >= 0.5:
-                return resume_score
+                skill_score = resume_score
             else:
-                return 0
+                skill_score = 0
         else:
-            return 0
+            skill_score = 0
+
+        # Additional scoring based on skills_df, universal_skills_weights, and preferred_skills_weights
+        # Placeholder logic, should be replaced with actual calculation logic
+        additional_score = 0
+        if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
+            # Example: Calculate additional score based on weights (details depend on actual implementation)
+            additional_score = (sum(universal_skills_weights) + sum(preferred_skills_weights)) * 0.1  # Adjust logic as needed
+
+        return skill_score + additional_score
 
     def score_projects(self, projects):
         score = 0
@@ -100,12 +110,17 @@ class ATS:
                     score += 1
         return score
 
-
     def calculate_ats_score(self, job_description):
         resume_data = self.resume_data
         education_score = self.score_education(job_description["education"], resume_data["education"])
         experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
-        skills_score = self.score_skills(job_description["skills"], resume_data["skills"])
+        skills_score = self.score_skills(
+            job_description["skills"], 
+            resume_data["skills"], 
+            job_description.get("skills_df"),
+            job_description.get("universal_skills_weights"),
+            job_description.get("preferred_skills_weights")
+        )
         projects_score = self.score_projects(resume_data["projects"])
         certifications_score = self.score_certifications(job_description["certifications"], resume_data["certifications"])
 
@@ -137,7 +152,6 @@ class ATS:
             "certifications_score": certifications_score,
             "result": result
         }
-
 
 if __name__ == '__main__':
     ats = ATS(resume_data=sample_resume_data)
