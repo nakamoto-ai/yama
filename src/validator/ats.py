@@ -18,14 +18,18 @@ sample_job_description = {
     "certifications": [
         "Certified ScrumMaster (CSM)",
         "AWS Certified Solutions Architect"
-    ],
-    "skills_df": None,  # Placeholder, this should be the actual DataFrame
-    "universal_skills_weights": None,  # Placeholder, this should be the actual weights
-    "preferred_skills_weights": None  # Placeholder, this should be the actual weights
+    ]
 }
 
 class ATS:
-    def __init__(self, resume_data):
+    def __init__(self, skills_df, universal_skills_weights, preferred_skills_weights, resume_data=sample_resume_data):
+        self.resume_data = resume_data
+        self.resume_extractor = ResumeExtractor(resume_data=self.resume_data)
+        self.skills_df = skills_df
+        self.universal_skills_weights = universal_skills_weights
+        self.preferred_skills_weights = preferred_skills_weights
+
+    def store_resume(self, resume_data):
         self.resume_data = resume_data
         self.resume_extractor = ResumeExtractor(resume_data=self.resume_data)
 
@@ -67,37 +71,40 @@ class ATS:
 
         return score
 
-    def score_skills(self, jd_skills, resume_skills, skills_df, universal_skills_weights, preferred_skills_weights):
-    universal_skills = defaultdict(int)
-    self.resume_extractor.process_skills(jd_skills, universal_skills)
+    def score_skills(self, jd_skills, resume_skills):
+        skills_df = self.skills_df
+        universal_skills_weights = self.universal_skills_weights
+        preferred_skills_weights = self.preferred_skills_weights
+        universal_skills = defaultdict(int)
+        self.resume_extractor.process_skills(jd_skills, universal_skills)
 
-    max_jd_score = sum(universal_skills.values())
+        max_jd_score = sum(universal_skills.values())
 
-    resume_skill_counts = defaultdict(int)
-    self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
-    resume_score = sum(resume_skill_counts.values())
+        resume_skill_counts = defaultdict(int)
+        self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
+        resume_score = sum(resume_skill_counts.values())
 
-    if max_jd_score > 0:
-        score_percentage = resume_score / max_jd_score
-        if score_percentage >= 0.5:
-            skill_score = resume_score
+        if max_jd_score > 0:
+            score_percentage = resume_score / max_jd_score
+            if score_percentage >= 0.5:
+                skill_score = resume_score
+            else:
+                skill_score = 0
         else:
             skill_score = 0
-    else:
-        skill_score = 0
 
-    additional_score = 0
-    if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
-        # Calculate additional score based on weights
-        for skill, weight in universal_skills_weights.items():
-            if skill in resume_skill_counts:
-                additional_score += resume_skill_counts[skill] * weight
+        additional_score = 0
+        if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
+            # Calculate additional score based on weights
+            for skill, weight in universal_skills_weights.items():
+                if skill in resume_skill_counts:
+                    additional_score += resume_skill_counts[skill] * weight
 
-        for skill, weight in preferred_skills_weights.items():
-            if skill in resume_skill_counts:
-                additional_score += resume_skill_counts[skill] * weight * 0.5  # Less weight compared to universal skills
+            for skill, weight in preferred_skills_weights.items():
+                if skill in resume_skill_counts:
+                    additional_score += resume_skill_counts[skill] * weight * 0.5  # Less weight compared to universal skills
 
-    return skill_score + additional_score
+        return skill_score + additional_score
 
 
     def score_projects(self, projects):
@@ -121,10 +128,7 @@ class ATS:
         experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
         skills_score = self.score_skills(
             job_description["skills"], 
-            resume_data["skills"], 
-            job_description.get("skills_df"),
-            job_description.get("universal_skills_weights"),
-            job_description.get("preferred_skills_weights")
+            resume_data["skills"]
         )
         projects_score = self.score_projects(resume_data["projects"])
         certifications_score = self.score_certifications(job_description["certifications"], resume_data["certifications"])

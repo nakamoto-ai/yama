@@ -18,6 +18,8 @@ from substrateinterface import Keypair
 from loguru import logger
 from typing import Any, Dict, List
 
+from adjust_scoring import conditional_power_scaling, normalize_scores
+from ats import ATS
 from config.validator import ValidatorConfig
 from comx.interface import ComxInterface
 from comx.client import ComxClient
@@ -51,7 +53,8 @@ class Validator(Module):
         self.use_testnet = use_testnet
         self.uid = None
         self.queried_miners: MinerRegistry = MinerRegistry()
-        self.jd_keys = JobDescription
+        self.jd_keys = JobDescription()
+        self.ats = None
         self.job_description = {}
 
     def get_validator_uid(self) -> int:
@@ -71,14 +74,16 @@ class Validator(Module):
 
         self.job_description = self.get_job_description()
         resumes = self.query(miners=next_miners)
-        skills_df, universal_skills_weights, preferred_skills_weights = self.process_job_description()
-        self.score(miners=next_miners)
+        scoring_data = self.process_job_description()
+        self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'], preferred_skills_weights=scoring_data['preferred'])
+        next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
         self.cache(miners=next_miners)
+        uids, weights = self.set_weights(miners)
 
         self.weight_io.write_weights(new_registry)
 
         if len(self.queried_miners.get_all_by_ss58()) == len(new_registry.get_all_by_ss58()):
-            # TODO: Call vote method.
+            self.vote(uids, weights)
             print("Time to vote!")
             self.queried_miners = MinerRegistry()
 
@@ -262,21 +267,26 @@ class Validator(Module):
         return extracted_resumes
 
 
-    def score(self, miners: MinerRegistry):
+    def score(self, miners: MinerRegistry, resumes: Dict[str, Any], scoring_data: Dict[str, Any]):
         """
-        Takes a list of miners that will be scored.
-
-        TODO: This function is a placeholder - needs to be updated
+        Takes a list of miners that will be scored, a uid mapping of resumes and job description scoring data
 
         Args:
             miners: The MinerRegistry containing the miners that will be scored.
+            resumes: Dict containing UID as key and resume data as the value
+            scoring_data: Dict containing various values extracted from the job description
         """
         miners_dict = miners.get_all_by_uid()
-        for _, v in miners_dict.items():
-            # TODO: Score each of the miners.
-            random_number = random.randint(1, 1000)
-            v.score = random_number
+
+        for uid, v in miners_dict.items():
+            resume_data = resumes[uid]
+            self.ats.store_resume(resume_data=resume_data)
+            ats_score = self.ats.calculate_ats_score(scoring_data['jd'])
+            total_score = ats_score['total_score']
+            v.score = total_score
             miners.set(v)
+
+        return miners
 
     def cache(self, miners: MinerRegistry):
         """
@@ -299,8 +309,42 @@ class Validator(Module):
                 score=v.score
             ))
 
-    def set_weights(self):
-        pass
+    def set_weights(self, miners: MinerRegistry):
+        """
+        Set weights for miners based on their normalized and power scaled scores.
+        """
+        full_score_dict = {k: v.score for k, v in miners.get_all_by_uid()}
+        weighted_scores: dict[int: float] = {}
+
+        abnormal_scores = full_score_dict.values()
+        normal_scores = normalize_scores(abnormal_scores)
+        score_dict = {uid: score for uid, score in zip(full_score_dict.keys(), normal_scores)}
+        power_scaled_scores = conditional_power_scaling(score_dict)
+        scores = sum(power_scaled_scores.values())
+
+        for uid, score in power_scaled_scores.items():
+            weight = score * 1000 / scores
+            weighted_scores[uid] = weight
+
+        weighted_scores = {k: v for k, v in zip(weighted_scores.keys(), normalize_scores(weighted_scores.values())) if v != 0}
+
+        if self.uid is not None and str(self.uid) in weighted_scores:
+            del weighted_scores[str(self.uid)]
+            logger.info(f"REMOVING UID !!!!!! {self.uid}")
+        else:
+            logger.info("NOT REMOVING ANY UID")
+
+        uids = list(weighted_scores.keys())
+        intuids = [eval(i) for i in uids]
+        weights = list(weighted_scores.values())
+        intweights = [int(weight * 1000) for weight in weights]
+
+        logger.info("**********************************")
+        logger.info(f"UIDS: {intuids}")
+        logger.info(f"WEIGHTS TO SET: {intweights}")
+        logger.info("**********************************")
+        return intuids, intweights
+
 
     def validation_loop(self) -> None:
         while True:
@@ -337,12 +381,29 @@ class Validator(Module):
     def process_job_description(self):
         job_description = self.job_description
         skills_df = self.jd_keys.get_skills_dataframe()
+        processed_job_description = self.jd_keys.get_formatted_jd()
         jd_skills = JDSkills(skills_df, job_description)
         universal_skills_weights, preferred_skills_weights = jd_skills.get_skills_weights()
-        return skills_df, universal_skills_weights, preferred_skills_weights
+        scoring_data = {
+            'jd': processed_job_description,
+            'skills': skills_df,
+            'universal': universal_skills_weights,
+            'preferred': preferred_skills_weights
+        }
+        return scoring_data
 
     def get_job_description(self):
         return self.jd_keys.get_random_jd()
+
+    def vote(self, uids, weights):
+        try:
+            self.client.vote(key=self.key, uids=uids, weights=weights, netuid=self.netuid)
+        except Exception as e:
+            logger.error(f"WARNING: Failed to set weights with exception: {e}. Will retry.")
+            sleepy_time = random.uniform(1, 2)
+            time.sleep(sleepy_time)
+            self.client = CommuneClient(get_node_url(use_testnet=self.use_testnet))
+            self.client.vote(key=self.key, uids=uids, weights=weights, netuid=self.netuid)
 
 
 if __name__ == '__main__':

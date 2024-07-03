@@ -12,9 +12,11 @@ class JobDescription:
         self.train_data = get_validator_dataset()
         self.vectorizer = self.load_vectorizer()
         self.df = pd.DataFrame(self.train_data)
+
     def load_vectorizer(self):
         tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
         return tfidf_vectorizer
+
     def extract_keywords_advanced(self, job_description, tfidf_vectorizer, feature_names):
         # TF-IDF
         tfidf_matrix = tfidf_vectorizer.transform([job_description])
@@ -39,6 +41,7 @@ class JobDescription:
     def get_random_jd(self):
         random_jd = self.df.sample(n=1).copy()
         return random_jd
+
     def get_skills_dataframe(self):
         df_sample = self.get_random_jd()
         self.vectorizer.fit(self.df['description'])
@@ -47,10 +50,15 @@ class JobDescription:
             lambda x: self.extract_keywords_advanced(x, self.vectorizer, feature_names))
         return df_sample
 
+    def get_formatted_jd(self):
+        skills_df = self.get_skills_dataframe()
+        formatted_jd = skills_df['keywords'].iloc[0]
+        return formatted_jd
+
     def __str__(self):
         skills_dict = self.get_skills_dataframe().to_dict(orient='records')
-        return skills_dict
+        return str(skills_dict)
 
 if __name__ == '__main__':
     jd = JobDescription()
-    print(f"Skills: {jd.__str__()}")
+    print(f"Skills: {jd.get_formatted_jd()}")
