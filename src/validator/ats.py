@@ -68,32 +68,37 @@ class ATS:
         return score
 
     def score_skills(self, jd_skills, resume_skills, skills_df, universal_skills_weights, preferred_skills_weights):
-        universal_skills = defaultdict(int)
-        self.resume_extractor.process_skills(jd_skills, universal_skills)
+    universal_skills = defaultdict(int)
+    self.resume_extractor.process_skills(jd_skills, universal_skills)
 
-        max_jd_score = sum(universal_skills.values())
+    max_jd_score = sum(universal_skills.values())
 
-        resume_skill_counts = defaultdict(int)
-        self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
-        resume_score = sum(resume_skill_counts.values())
+    resume_skill_counts = defaultdict(int)
+    self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
+    resume_score = sum(resume_skill_counts.values())
 
-        if max_jd_score > 0:
-            score_percentage = resume_score / max_jd_score
-            if score_percentage >= 0.5:
-                skill_score = resume_score
-            else:
-                skill_score = 0
+    if max_jd_score > 0:
+        score_percentage = resume_score / max_jd_score
+        if score_percentage >= 0.5:
+            skill_score = resume_score
         else:
             skill_score = 0
+    else:
+        skill_score = 0
 
-        # Additional scoring based on skills_df, universal_skills_weights, and preferred_skills_weights
-        # Placeholder logic, should be replaced with actual calculation logic
-        additional_score = 0
-        if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
-            # Example: Calculate additional score based on weights (details depend on actual implementation)
-            additional_score = (sum(universal_skills_weights) + sum(preferred_skills_weights)) * 0.1  # Adjust logic as needed
+    additional_score = 0
+    if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
+        # Calculate additional score based on weights
+        for skill, weight in universal_skills_weights.items():
+            if skill in resume_skill_counts:
+                additional_score += resume_skill_counts[skill] * weight
 
-        return skill_score + additional_score
+        for skill, weight in preferred_skills_weights.items():
+            if skill in resume_skill_counts:
+                additional_score += resume_skill_counts[skill] * weight * 0.5  # Less weight compared to universal skills
+
+    return skill_score + additional_score
+
 
     def score_projects(self, projects):
         score = 0
