@@ -251,7 +251,7 @@ class Validator(Module):
 
         return next_miners
 
-    def query(self, miners: MinerRegistry, job_description: dict) -> list[dict | None]:
+    def query(self, miners: MinerRegistry, job_description: str) -> list[dict | None]:
         """
         Queries all the miners in the MinerRegistry with the provided job description. 
         The miner responses are appended to a list in json format.
