@@ -1,11 +1,13 @@
 import json
 from datetime import datetime
 from collections import defaultdict
-from datasets import load_dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.neighbors import NearestNeighbors
-from fuzzywuzzy import fuzz
+from sklearn.metrics.pairwise import cosine_similarity
+import nltk
+from sentence_transformers import SentenceTransformer, util
 from resume_extract import ResumeExtractor, sample_resume_data
+
+nltk.download('punkt')
 
 sample_job_description = {
     "education": "Bachelor",
@@ -28,6 +30,8 @@ class ATS:
         self.skills_df = skills_df
         self.universal_skills_weights = universal_skills_weights
         self.preferred_skills_weights = preferred_skills_weights
+        self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+        self.vectorizer = TfidfVectorizer()
 
     def store_resume(self, resume_data):
         self.resume_data = resume_data
@@ -50,7 +54,7 @@ class ATS:
     def score_experience(self, min_years_experience, resume_experience):
         score = 0
         for work in resume_experience:
-            years_of_experience = self.resume_extractor.calculate_years(work["start_date"], work["end_date"])
+            years_of_experience = self.calculate_years(work["start_date"], work["end_date"])
 
             if min_years_experience >= 8:
                 if years_of_experience >= min_years_experience:
@@ -106,11 +110,10 @@ class ATS:
 
         return skill_score + additional_score
 
-
     def score_projects(self, projects):
         score = 0
         for project in projects:
-            project_duration = self.resume_extractor.calculate_years(project["start_date"], project["end_date"])
+            project_duration = self.calculate_years(project["start_date"], project["end_date"])
             score += project_duration * 0.3
         return score
 
@@ -122,31 +125,83 @@ class ATS:
                     score += 1
         return score
 
-    def calculate_ats_score(self, job_description):
+    def calculate_years(self, start_date, end_date):
+        start = datetime.strptime(start_date, "%Y-%m-%d")
+        end = datetime.strptime(end_date, "%Y-%m-%d")
+        return (end - start).days / 365.25
+
+    def get_sentence_embeddings(self, text):
+        return self.model.encode(text, convert_to_tensor=True)
+
+    def check_semantic_sense(self, text):
+        sentences = nltk.sent_tokenize(text)
+        embeddings = self.get_sentence_embeddings(sentences)
+        
+        coherence_score = 0
+        for i in range(1, len(embeddings)):
+            coherence_score += util.pytorch_cos_sim(embeddings[i], embeddings[i-1]).item()
+        
+        average_coherence = coherence_score / (len(embeddings) - 1)
+        return average_coherence
+
+    def score_semantics(self, resume_text):
+        semantic_score = self.check_semantic_sense(resume_text)
+        if semantic_score < 0.5:
+            return 0
+        elif 0.5 <= semantic_score < 0.75:
+            return 1
+        else:
+            return 2
+
+    def check_similarity(self, resume_text, job_description_text, threshold=0.8):
+        self.vectorizer.fit([job_description_text, resume_text])
+        jd_vector = self.vectorizer.transform([job_description_text])
+        resume_vector = self.vectorizer.transform([resume_text])
+        
+        similarity = cosine_similarity(jd_vector, resume_vector)[0][0]
+        
+        if similarity >= threshold:
+            return True
+        return False
+
+    def score_similarity(self, resume_text, job_description_text):
+        return 1 if self.check_similarity(resume_text, job_description_text) else 0
+
+        def calculate_ats_score(self, job_description):
         resume_data = self.resume_data
         education_score = self.score_education(job_description["education"], resume_data["education"])
         experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
-        skills_score = self.score_skills(
-            job_description["skills"], 
-            resume_data["skills"]
-        )
+        skills_score = self.score_skills(job_description["skills"], resume_data["skills"])
         projects_score = self.score_projects(resume_data["projects"])
         certifications_score = self.score_certifications(job_description["certifications"], resume_data["certifications"])
 
-        total_score = (education_score + experience_score + skills_score + projects_score + certifications_score)
+        # Combine all sections of the resume to check semantics and similarity
+        resume_text = ' '.join([work["roles"] for work in resume_data["work_experience"]])
+        semantics_score = self.score_semantics(resume_text)
+        similarity_score = self.score_similarity(resume_text, ' '.join(job_description["skills"]))
+
+        total_score = (education_score + experience_score + skills_score + projects_score + certifications_score + semantics_score + similarity_score)
 
         min_education_score = 1
         min_experience_score = 1
         min_skills_score = 1
         min_projects_score = 0.3
         min_certifications_score = 1
-        min_overall_score = 3.5
+        min_semantics_score = 1
+        min_similarity_score = 1
+        min_overall_score = 5.5
+
+        # If similarity score is high, set total_score to 0
+        if similarity_score == 1:
+            total_score = 0
 
         if (education_score >= min_education_score and
             experience_score >= min_experience_score and
             skills_score >= min_skills_score and
             projects_score >= min_projects_score and
             certifications_score >= min_certifications_score and
+            semantics_score >= min_semantics_score and
+            similarity_score >= min_similarity_score and
             total_score >= min_overall_score):
             result = "Yay, you're in!"
         else:
@@ -159,10 +214,12 @@ class ATS:
             "skills_score": skills_score,
             "projects_score": projects_score,
             "certifications_score": certifications_score,
+            "semantics_score": semantics_score,
+            "similarity_score": similarity_score,
             "result": result
         }
 
 if __name__ == '__main__':
     ats = ATS(resume_data=sample_resume_data)
     result = ats.calculate_ats_score(sample_job_description)
-    print(json.dumps(result, indent=4))
+    print(json.dumps
