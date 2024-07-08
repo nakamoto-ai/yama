@@ -275,7 +275,7 @@ class Validator(Module):
             miner = miners.get_by_uid(uid)
             ip, port = miner.get_split_ip_port()
 
-            client = ModuleClient(host=ip, port=port, key=self.key)
+            client = ModuleClient(host=ip, port=int(port), key=self.key)
 
             try:
                 miner_answer = client.call(
