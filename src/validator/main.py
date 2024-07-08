@@ -75,7 +75,8 @@ class Validator(Module):
         job_description = self.get_job_description()
         resumes = self.query(miners=next_miners, job_description=job_description)
 
-        scoring_data = self.process_job_description()
+        scoring_data = self.process_job_description(job_description=job_description)
+
         self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
                        preferred_skills_weights=scoring_data['preferred'])
         next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
@@ -400,8 +401,7 @@ class Validator(Module):
         # TODO: step where validator serves the miners a job description
         pass
 
-    def process_job_description(self):
-        job_description = self.job_description
+    def process_job_description(self, job_description: str):
         skills_df = self.jd_keys.get_skills_dataframe()
         processed_job_description = self.jd_keys.get_formatted_jd()
         jd_skills = JDSkills(skills_df, job_description)
