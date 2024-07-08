@@ -160,7 +160,7 @@ class ATS:
         
         similarity = cosine_similarity(jd_vector, resume_vector)[0][0]
         
-        if similarity >= threshold:
+        if similarity >= 0.7:
             return True
         return False
 
