@@ -23,6 +23,7 @@ sample_job_description = {
     ]
 }
 
+
 class ATS:
     def __init__(self, skills_df, universal_skills_weights, preferred_skills_weights, resume_data=sample_resume_data):
         self.resume_data = resume_data
@@ -136,11 +137,11 @@ class ATS:
     def check_semantic_sense(self, text):
         sentences = nltk.sent_tokenize(text)
         embeddings = self.get_sentence_embeddings(sentences)
-        
+
         coherence_score = 0
         for i in range(1, len(embeddings)):
             coherence_score += util.pytorch_cos_sim(embeddings[i], embeddings[i-1]).item()
-        
+
         average_coherence = coherence_score / (len(embeddings) - 1)
         return average_coherence
 
@@ -157,9 +158,9 @@ class ATS:
         self.vectorizer.fit([job_description_text, resume_text])
         jd_vector = self.vectorizer.transform([job_description_text])
         resume_vector = self.vectorizer.transform([resume_text])
-        
+
         similarity = cosine_similarity(jd_vector, resume_vector)[0][0]
-        
+
         if similarity >= 0.7:
             return True
         return False
@@ -167,7 +168,7 @@ class ATS:
     def score_similarity(self, resume_text, job_description_text):
         return 1 if self.check_similarity(resume_text, job_description_text) else 0
 
-        def calculate_ats_score(self, job_description):
+    def calculate_ats_score(self, job_description):
         resume_data = self.resume_data
         education_score = self.score_education(job_description["education"], resume_data["education"])
         experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
@@ -180,7 +181,8 @@ class ATS:
         semantics_score = self.score_semantics(resume_text)
         similarity_score = self.score_similarity(resume_text, ' '.join(job_description["skills"]))
 
-        total_score = (education_score + experience_score + skills_score + projects_score + certifications_score + semantics_score + similarity_score)
+        total_score = (education_score + experience_score + skills_score + projects_score +
+                       certifications_score + semantics_score + similarity_score)
 
         min_education_score = 1
         min_experience_score = 1
@@ -202,7 +204,7 @@ class ATS:
             certifications_score >= min_certifications_score and
             semantics_score >= min_semantics_score and
             similarity_score >= min_similarity_score and
-            total_score >= min_overall_score):
+                total_score >= min_overall_score):
             result = "Yay, you're in!"
         else:
             result = "Sorry, you're out."
@@ -218,6 +220,7 @@ class ATS:
             "similarity_score": similarity_score,
             "result": result
         }
+
 
 if __name__ == '__main__':
     ats = ATS(resume_data=sample_resume_data)
