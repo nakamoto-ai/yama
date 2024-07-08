@@ -266,15 +266,13 @@ class Validator(Module):
 
                 TODO: Format the data in a way to map uid/ss58 to each response.
         """
-        miners_dict = miners.get_all_by_uid()
+        miners_dict: dict[int, ScoredMinerModule] = miners.get_all_by_uid()
         miner_answers = []
 
-        for uid, v in miners_dict:
-            print(f"UID: {uid}, Values: {v}")
+        for uid, miner in miners_dict.items():
+            print(f"UID: {uid}, Values: {miner}")
 
-            miner = miners.get_by_uid(uid)
             ip, port = miner.get_split_ip_port()
-
             client = ModuleClient(host=ip, port=int(port), key=self.key)
 
             try:
