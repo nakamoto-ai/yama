@@ -222,4 +222,4 @@ class ATS:
 if __name__ == '__main__':
     ats = ATS(resume_data=sample_resume_data)
     result = ats.calculate_ats_score(sample_job_description)
-    print(json.dumps
+    print(json.dumps)
