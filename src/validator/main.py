@@ -31,6 +31,7 @@ from skills import JDSkills
 from validator.io.weights import WeightIO, WeightIOInterface
 from validator.io.io import IO
 
+
 class Validator(Module):
 
     def __init__(
@@ -75,7 +76,8 @@ class Validator(Module):
         self.job_description = self.get_job_description()
         resumes = self.query(miners=next_miners)
         scoring_data = self.process_job_description()
-        self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'], preferred_skills_weights=scoring_data['preferred'])
+        self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
+                       preferred_skills_weights=scoring_data['preferred'])
         next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
         self.cache(miners=next_miners)
         uids, weights = self.set_weights(miners)
@@ -266,8 +268,7 @@ class Validator(Module):
         extracted_resumes = self.extract_resumes(resumes)
         return extracted_resumes
 
-
-    def score(self, miners: MinerRegistry, resumes: Dict[str, Any], scoring_data: Dict[str, Any]):
+    def score(self, miners: MinerRegistry, resumes: Dict[str, Any], scoring_data: Dict[str, Any]) -> MinerRegistry:
         """
         Takes a list of miners that will be scored, a uid mapping of resumes and job description scoring data
 
@@ -326,7 +327,8 @@ class Validator(Module):
             weight = score * 1000 / scores
             weighted_scores[uid] = weight
 
-        weighted_scores = {k: v for k, v in zip(weighted_scores.keys(), normalize_scores(weighted_scores.values())) if v != 0}
+        weighted_scores = {k: v for k, v in zip(
+            weighted_scores.keys(), normalize_scores(weighted_scores.values())) if v != 0}
 
         if self.uid is not None and str(self.uid) in weighted_scores:
             del weighted_scores[str(self.uid)]
@@ -344,7 +346,6 @@ class Validator(Module):
         logger.info(f"WEIGHTS TO SET: {intweights}")
         logger.info("**********************************")
         return intuids, intweights
-
 
     def validation_loop(self) -> None:
         while True:
