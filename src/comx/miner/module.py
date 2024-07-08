@@ -2,6 +2,7 @@
 Author: Eddie
 """
 
+
 class MinerModule:
     """
     This class represents a miner registered on the network.
@@ -10,7 +11,7 @@ class MinerModule:
         uid (int): The uid of the miner on the subnet.
         ss58 (str): The SS58 of the miner occupying the uid slot.
         address (str): The url the miner is serving on.
-    
+
     Methods:
         __init__(uid: int, ss58: str, address: str, score: int):
             Initializes the ScoreMinerModule instance.
@@ -20,6 +21,7 @@ class MinerModule:
             Defines and returns the string representation of a 
             ScoredMinerModule
     """
+
     def __init__(self, uid: int, ss58: str, address: str):
         """
         Initializes the MinerModule instance.
@@ -46,6 +48,10 @@ class MinerModule:
             "address": self.address
         }
 
+    def get_split_ip_port(self) -> list[str]:
+        ip_port = self.address.split(':')
+        return ip_port
+
     def __repr__(self) -> str:
         """
         Defines and returns the string representation of a MinerModule.
@@ -54,6 +60,7 @@ class MinerModule:
             str: The string representation of the MinerModule instance.
         """
         return f"MinerModule(UID={self.uid}, SS58={self.ss58}, Address={self.address})"
+
 
 class ScoredMinerModule(MinerModule):
     """
@@ -65,7 +72,7 @@ class ScoredMinerModule(MinerModule):
         ss58 (str): The SS58 of the miner occupying the uid slot.
         address (str): The url the miner is serving on.
         score (int): The score of the miner determined by the validator.
-    
+
     Methods:
         __init__(uid: int, ss58: str, address: str, score: int):
             Initializes the ScoreMinerModule instance.
@@ -75,6 +82,7 @@ class ScoredMinerModule(MinerModule):
             Defines and returns the string representation of a 
             ScoredMinerModule
     """
+
     def __init__(self, uid: int, ss58: str, address: str, score: int):
         """
         Initializes the ScoredMinerModule instance.
@@ -107,6 +115,6 @@ class ScoredMinerModule(MinerModule):
             str: The string representation of the ScoredMinerModule instance.
         """
         return (
-            f"ScoredMinerModule(UID={self.uid}, " 
+            f"ScoredMinerModule(UID={self.uid}, "
             f"SS58={self.ss58}, Address={self.address}, Score={self.score})"
         )

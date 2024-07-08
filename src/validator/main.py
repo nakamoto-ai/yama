@@ -9,9 +9,11 @@ import os
 import random
 
 from communex.module.module import Module
+from communex.module.client import ModuleClient
 from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
 from communex._common import get_node_url
+
 
 from substrateinterface import Keypair
 
@@ -56,7 +58,6 @@ class Validator(Module):
         self.queried_miners: MinerRegistry = MinerRegistry()
         self.jd_keys = JobDescription()
         self.ats = None
-        self.job_description = {}
 
     def get_validator_uid(self) -> int:
         modules = self.client.get_map_modules(self.netuid, False)
@@ -69,12 +70,11 @@ class Validator(Module):
         new_registry = self.sync_miners(miners=miners)
         self.sync_cache(registry=new_registry)
 
-        # TODO: Generate prompt/task.
-
         next_miners = self.next_miners(registry=new_registry)
 
-        self.job_description = self.get_job_description()
-        resumes = self.query(miners=next_miners)
+        job_description = self.get_job_description()
+        resumes = self.query(miners=next_miners, job_description=job_description)
+
         scoring_data = self.process_job_description()
         self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
                        preferred_skills_weights=scoring_data['preferred'])
@@ -251,22 +251,45 @@ class Validator(Module):
 
         return next_miners
 
-    def query(self, miners: MinerRegistry):
+    def query(self, miners: MinerRegistry, job_description: dict) -> list[dict | None]:
         """
-        Takes a list of miners that should be queried.
-
-        TODO: This function is a placeholder - needs to be updated
+        Queries all the miners in the MinerRegistry with the provided job description. 
+        The miner responses are appended to a list in json format.
 
         Args:
             miners: The MinerRegistry containing the miners that will be queried.
+
+        Returns:
+            list[dict | None]:
+                The list of miner responses in json format, if a query failed, it is appended
+                as None.
+
+                TODO: Format the data in a way to map uid/ss58 to each response.
         """
         miners_dict = miners.get_all_by_uid()
-        for k, v in miners_dict.items():
-            print(f"UID: {k}, Values: {v}")
-        self.serve_miners_prompt(self.job_description)
-        resumes = self.get_resumes_from_miners(self.job_description)
-        extracted_resumes = self.extract_resumes(resumes)
-        return extracted_resumes
+        miner_answers = []
+
+        for uid, v in miners_dict:
+            print(f"UID: {uid}, Values: {v}")
+
+            miner = miners.get_by_uid(uid)
+            ip, port = miner.get_split_ip_port()
+
+            client = ModuleClient(host=ip, port=port, key=self.key)
+
+            try:
+                miner_answer = client.call(
+                    "generate",
+                    miner.ss58,
+                    {"prompt": job_description},
+                    timeout=self.call_timeout,
+                )
+                miner_answers.append(miner_answer["answer"])
+            except Exception as e:
+                logger.error(f"Error getting miner response: {e}")
+                miner_answers.append(None)
+
+        return miner_answers
 
     def score(self, miners: MinerRegistry, resumes: Dict[str, Any], scoring_data: Dict[str, Any]) -> MinerRegistry:
         """
