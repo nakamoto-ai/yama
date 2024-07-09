@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sqlite3
-import json
+import csv
 
 
 def exportData(database, output):
@@ -12,13 +12,13 @@ def exportData(database, output):
     cur.execute("SELECT job, description FROM jobs")
     rows = cur.fetchall()
 
-    # Write job data to a JSON Lines file
-    with open(output, 'w') as f:
-        for row in rows:
-            job, description = row
-            data = {"job": job, "description": description}
-            json.dump(data, f)
-            f.write('\n')
+    # Write job data to a CSV file
+    with open(output, 'w', newline='') as f:
+        writer = csv.writer(f)
+        # Write the header
+        writer.writerow(["job", "description"])
+        # Write the rows
+        writer.writerows(rows)
 
     # Close the database connection
     con.close()
@@ -26,6 +26,6 @@ def exportData(database, output):
 
 if __name__ == "__main__":
     database = "jobs.db"
-    output = "jobTrainingData.jsonl"
+    output = "jobTrainingData.csv"
     exportData(database, output)
     print(f"Successfully exported data from {database} to {output}")
