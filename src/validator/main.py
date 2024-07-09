@@ -414,7 +414,24 @@ class Validator(Module):
         return scoring_data
 
     def get_job_description(self):
-        return self.jd_keys.get_random_jd()
+        # TODO: Update host and port to match API server.
+        client = ModuleClient(host="ip", port=0, key=self.key)
+
+        ss58 = self.key.ss58_address
+        timestamp = time.time()
+        data = f"{ss58}{timestamp}"
+        signature = self.key.sign(data.encode())
+
+        api_response = asyncio.run(
+            client.call(
+                "get_prompt",
+                "the-api-ss58",
+                {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
+                timeout=self.call_timeout
+            )
+        )
+
+        return api_response
 
     def vote(self, uids, weights):
         try:
