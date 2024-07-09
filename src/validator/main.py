@@ -277,12 +277,11 @@ class Validator(Module):
             client = ModuleClient(host=ip, port=int(port), key=self.key)
 
             try:
-                miner_answer = client.call(
-                    "generate",
-                    miner.ss58,
-                    {"prompt": job_description},
-                    timeout=self.call_timeout,
+                # TODO: Call asynchronously using partials and ThreadPoolExecuters
+                miner_answer = asyncio.run(
+                    client.call("generate", miner.ss58, {"prompt": job_description}, timeout=self.call_timeout)
                 )
+
                 miner_answers.append(miner_answer["answer"])
             except Exception as e:
                 logger.error(f"Error getting miner response: {e}")
