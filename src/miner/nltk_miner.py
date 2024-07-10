@@ -177,6 +177,30 @@ class RelevanceScorer:
         }
 
 class Resume:
+    """
+    A class to generate resumes based on given data and job descriptions.
+
+    This class uses a relevance scoring system to tailor resumes highlighting relevant 
+    job titles, skills, and educational background tailored to specific job descriptions.
+
+    Methods:
+        __init__(self, data): Initializes the Resume class with provided data.
+        get_scaled_periods(self, num_jobs, scale_factor): Calculate proportional work 
+            periods for jobs.
+        get_job_info(self, job_index, data): Fetch job information from the dataset.
+        get_work_experience(self, relevant_job_titles, graduation_year): Compile work 
+            experience section of the resume.
+        get_education(self, major, graduation_year): Compile education section of the 
+            resume.
+        generate_resume(self, job_description): Generate a complete resume based on a job
+            description.
+
+    Attributes:
+        scorer (RelevanceScorer): Utilizes RelevanceScorer to calculate relevance of data
+            points.
+        data (dict): A dictionary containing datasets used in relevance calculations. 
+            Expected keys are 'job_title_data', 'skills', and 'majors'.
+    """
     def __init__(self, data):
         self.scorer = RelevanceScorer(data)
         self.data = data
