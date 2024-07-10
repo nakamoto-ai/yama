@@ -274,6 +274,24 @@ class Resume:
         return resume
 
 class NltkMiner(BaseMiner):
+    """
+    A specialized miner class that uses natural language processing (NLP) techniques to 
+    generate resumes based on provided job descriptions. This class integrates NLTK-based
+    processing to analyze and extract relevant data points for resume creation.
+
+    Attributes:
+        data_loader (DataLoader): An instance of DataLoader to fetch and prepare 
+            necessary data.
+        resume (Resume): An instance of Resume that uses loaded data to generate 
+            tailored resumes.
+
+    Methods:
+        __init__(self): Initializes the NltkMiner with a DataLoader and a Resume 
+            instance.
+        generate_response(self, prompt: str): Generates a resume based on the provided 
+            job description prompt. This method serves as the interface for inputting job 
+            descriptions and receiving the generated resumes.
+    """
     def __init__(self):
         super().__init__()
         self.data_loader = DataLoader()
