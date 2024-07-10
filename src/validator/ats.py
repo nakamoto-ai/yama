@@ -7,7 +7,6 @@ import nltk
 from sentence_transformers import SentenceTransformer, util
 from resume_extract import ResumeExtractor, sample_resume_data
 
-nltk.download('punkt')
 
 sample_job_description = {
     "education": "Bachelor",

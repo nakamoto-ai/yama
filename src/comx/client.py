@@ -1,12 +1,15 @@
 """
 Author: Eddie
 """
-from communex.client import CommuneClient
+from communex.client import CommuneClient, Keypair
 from communex.types import SubnetParamsWithEmission, ModuleInfoWithOptionalBalance
 from communex.misc import get_map_modules, get_map_subnets_params
+from communex._common import get_node_url
 
 from comx.interface import ComxInterface
-
+from loguru import logger
+import random
+import time
 
 class ComxClient(ComxInterface):
     """
@@ -99,3 +102,29 @@ class ComxClient(ComxInterface):
         """
         current_block = self.client.get_block()["header"]["number"]
         return int(current_block)
+
+    def vote(
+        self,
+        key: Keypair,
+        uids: list[int],
+        weights: list[int],
+        netuid: int = 0,
+        use_testnet: bool = False
+    ):
+        """
+        Args:
+            key: The keypair used for signing the vote transaction.
+            uids: A list of module UIDs to vote on.
+            weights: A list of weights corresponding to each UID.
+            netuid: The network identifier.
+            use_testnet: Whether testnet is being used
+        """
+        try:
+            self.client.vote(key=key, uids=uids, weights=weights, netuid=netuid)
+        except Exception as e:
+            logger.error(f"WARNING: Failed to set weights with exception: {e}. Will retry.")
+            sleepy_time = random.uniform(1, 2)
+            time.sleep(sleepy_time)
+            # TODO: Remove need to create new commune client every retry
+            self.client = CommuneClient(get_node_url(use_testnet=use_testnet))
+            self.client.vote(key=key, uids=uids, weights=weights, netuid=netuid)

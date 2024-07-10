@@ -4,14 +4,13 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
 from hugging_data import get_validator_dataset
 
-nlp = spacy.load('en_core_web_trf')
-nltk.download('punkt')
 
 class JobDescription:
     def __init__(self):
         self.train_data = get_validator_dataset()
         self.vectorizer = self.load_vectorizer()
         self.df = pd.DataFrame(self.train_data)
+        self.nlp = spacy.load('en_core_web_trf')
 
     def load_vectorizer(self):
         tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
@@ -24,7 +23,7 @@ class JobDescription:
         tfidf_keywords = [feature_names[i] for i in tfidf_scores.argsort()[-10:][::-1]]
 
         # NER
-        doc = nlp(job_description)
+        doc = self.nlp(job_description)
         ner_keywords = {
             'education': [ent.text for ent in doc.ents if ent.label_ in ['EDUCATION', 'ORG']],
             'skills': [ent.text for ent in doc.ents if ent.label_ in ['SKILL', 'LANGUAGE']],
