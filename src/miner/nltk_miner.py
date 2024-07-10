@@ -25,7 +25,6 @@ class DataLoader:
             - 'job_title_data': Dataset containing job title information
 
     Methods:
-        load_json_data(file_path): Load data from a JSON file
         load_school_names(file_path): Load school names from a JSON file
         load_majors(file_path): Load major names from a JSON file
         load_skills(): Load skills from an external dataset
@@ -33,42 +32,19 @@ class DataLoader:
     """
     def __init__(self):
         self.data = {
-            'schools': self.load_school_names('src/miner/data/schools.json'),
-            'majors': self.load_majors('src/miner/data/majors.json'),
+            'schools': self.load_school_names(),
+            'majors': self.load_majors(),
             'skills': self.load_skills(),
             'job_title_data': self.load_job_title_data()
         }
 
-    def load_json_data(self, file_path):
-        """
-        Load data from a JSON file
+    def load_school_names(self):
+        data = load_dataset("mw4/schools")["train"]
+        return [school["name"] for school in data]
 
-        Args:
-            file_path (str): The path to the JSON file to be loaded.
-
-        Returns:
-            dict: The parsed JSON data as a Python dictionary.
-
-        Raises:
-            FileNotFoundError: If the specified file is not found.
-            json.JSONDecodeError: If the file contains invalid JSON.
-        """
-        with open(file_path, 'r', encoding="utf-8") as file:
-            return json.load(file)
-
-    def load_school_names(self, file_path):
-        """
-        Load school names from a JSON file
-
-        Args:
-            file_path (str): The path to a JSON file with a school name
-        """
-        data = self.load_json_data(file_path)
-        return [school["name"] for school in data["results"]]
-
-    def load_majors(self, file_path):
-        data = self.load_json_data(file_path)
-        return [major["name"] for major in data["majors"]]
+    def load_majors(self):
+        data = load_dataset("mw4/majors")["train"]
+        return [major["name"] for major in data]
 
     def load_skills(self):
         skills_data = load_dataset("DrDominikDellermann/SkillsDataset")["train"]["skills"]
