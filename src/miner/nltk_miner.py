@@ -134,10 +134,10 @@ class RelevanceScorer:
                     self.data['job_title_data']['train']['position_title'].index(title),
                     title
                 )
-                for title, score in top_job_titles
+                for title, _ in top_job_titles
             ],
-            'skills': [skill for skill, score in top_skills],
-            'major': [major for major, score in top_major]
+            'skills': [skill for skill, _ in top_skills],
+            'major': [major for major, _ in top_major]
         }
 
 class Resume:
