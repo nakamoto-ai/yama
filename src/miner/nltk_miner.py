@@ -78,17 +78,12 @@ class RelevanceScorer:
         idf (dict): A dictionary storing IDF scores for each word in `all_documents`.
 
     Methods:
-        preprocess(text):
-            Process the input text by lowering case, removing stopwords, and stemming 
-            the remaining words.
-
-        _calculate_idf(documents):
-            Calculate the IDF for each unique word in the provided documents list.
-
-        calculate_relevance(text, documents):
-            Calculate the relevance of each document in `documents` with respect to 
-            the `text` based on the computed IDF scores.
-
+        preprocess(text): Process the input text by lowering case, removing stopwords, 
+            and stemming the remaining words.
+        _calculate_idf(documents): Calculate the IDF for each unique word in the 
+            provided documents list.
+        calculate_relevance(text, documents): Calculate the relevance of each document 
+            in `documents` with respect to the `text` based on the computed IDF scores.
         find_relevant_matches(job_description, num_jobs=3, num_skills=5, num_majors=1):
             Identify the top relevant job titles, skills, and majors for a given job 
             description. Returns a dictionary with keys 'job_titles', 'skills', and 
