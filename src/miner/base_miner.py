@@ -5,7 +5,31 @@ from loguru import logger
 from communex.module import Module, endpoint
 
 class BaseMiner(Module):
+    """
+    A base class for implementing mining operations with the ability to process and 
+    respond to prompts.
+    
+    This abstract class provides the structural foundation for generating responses 
+    based on given prompts, specifically designed to be extended by classes that 
+    implement specific types of data processing or response generation, such as resume 
+    building from job descriptions.
 
+    Attributes:
+        Inherits attributes from the Module class.
+
+    Methods:
+        generate(self, prompt: str) -> Dict[str, Any]: A high-level method that handles
+        the logging and timing of response generation. It calls the abstract method
+        generate_response to perform the actual data processing.
+
+        generate_response(self, prompt: str): Abstract method designed to be implemented
+        by subclasses to generate a response based on the provided prompt. The 
+        implementation should return a response relevant to the prompt.
+
+    Note:
+        As an abstract class, BaseMiner cannot be instantiated directly and must be 
+        subclassed with an implementation of the generate_response method.
+    """
     @endpoint
     def generate(self, prompt: str) -> Dict[str, Any]:
         start_time = time.time()
