@@ -7,6 +7,8 @@ import asyncio
 import time
 import os
 import random
+import concurrent.futures
+import nltk
 
 from communex.module.module import Module
 from communex.module.client import ModuleClient
@@ -27,6 +29,7 @@ from comx.interface import ComxInterface
 from comx.client import ComxClient
 from comx.miner.module import MinerModule, ScoredMinerModule
 from comx.miner.registry import MinerRegistry
+from functools import partial
 from job_description import JobDescription
 from resume_extract import ResumeExtractor
 from skills import JDSkills
@@ -73,6 +76,7 @@ class Validator(Module):
         next_miners = self.next_miners(registry=new_registry)
 
         job_description = self.get_job_description()
+
         resumes = self.query(miners=next_miners, job_description=job_description)
 
         scoring_data = self.process_job_description(job_description=job_description)
@@ -267,27 +271,30 @@ class Validator(Module):
 
                 TODO: Format the data in a way to map uid/ss58 to each response.
         """
-        miners_dict: dict[int, ScoredMinerModule] = miners.get_all_by_uid()
-        miner_answers = []
-
-        for uid, miner in miners_dict.items():
-            print(f"UID: {uid}, Values: {miner}")
-
-            ip, port = miner.get_split_ip_port()
-            client = ModuleClient(host=ip, port=int(port), key=self.key)
-
-            try:
-                # TODO: Call asynchronously using partials and ThreadPoolExecuters
-                miner_answer = asyncio.run(
-                    client.call("generate", miner.ss58, {"prompt": job_description}, timeout=self.call_timeout)
-                )
-
-                miner_answers.append(miner_answer["answer"])
-            except Exception as e:
-                logger.error(f"Error getting miner response: {e}")
-                miner_answers.append(None)
-
+        get_miner_prediction = partial(self._get_miner_prediction, job_description)
+        miners = miners.get_all_by_uid()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            it = executor.map(get_miner_prediction, miners.values())
+            miner_answers = [*it]
         return miner_answers
+
+    def _get_miner_prediction(self, job_description, miner: ScoredMinerModule):
+
+        ip, port = miner.get_split_ip_port()
+        client = ModuleClient(host=ip, port=int(port), key=self.key)
+        uid = miner.uid
+
+        try:
+            miner_answer = asyncio.run(
+                client.call("generate", miner.ss58, {"prompt": job_description}, timeout=self.call_timeout)
+            )
+
+            miner_prediction = miner_answer["answer"]
+        except Exception as e:
+            logger.error(f"Error getting miner response: {e}")
+            miner_prediction = None
+        miner_prediction = {str(uid): miner_prediction}
+        return miner_prediction
 
     def score(self, miners: MinerRegistry, resumes: Dict[str, Any], scoring_data: Dict[str, Any]) -> MinerRegistry:
         """
@@ -382,11 +389,6 @@ class Validator(Module):
             logger.info(f"Sleeping for {self.interval} seconds... ")
             time.sleep(self.interval)
 
-    def get_resumes_from_miners(self, job_description):
-        # TODO: Get all of the raw resume from the miners after prompting with job description
-        resumes_from_miners: List[Dict[Any]] = []
-        return resumes_from_miners
-
     def extract_resumes(self, miner_resumes):
         resume_extractor = ResumeExtractor()
         new_miner_resumes = {}
@@ -395,10 +397,6 @@ class Validator(Module):
             extracted_resume = resume_extractor.get_segments()
             new_miner_resumes[uid] = extracted_resume
         return new_miner_resumes
-
-    def serve_miners_prompt(self):
-        # TODO: step where validator serves the miners a job description
-        pass
 
     def process_job_description(self, job_description: str):
         skills_df = self.jd_keys.get_skills_dataframe()
@@ -414,7 +412,6 @@ class Validator(Module):
         return scoring_data
 
     def get_job_description(self):
-        # TODO: Update host and port to match API server.
         client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
@@ -455,6 +452,8 @@ if __name__ == '__main__':
     yama_dir = os.path.join(commune_dir, "yama")
 
     config = ValidatorConfig(env_path=args.env, ignore_config_file=args.ignore_env_file)
+
+    nltk.download('punkt')
 
     try:
         keypair = classic_load_key(config.get_key_name())

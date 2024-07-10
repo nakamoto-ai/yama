@@ -82,3 +82,10 @@ class ComxInterface(ABC):
             int: The current block number.
         """
         pass
+
+    @abstractmethod
+    def vote(self):
+        """
+        Sets weights for miners
+        """
+        pass

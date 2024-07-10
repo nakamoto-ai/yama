@@ -62,6 +62,7 @@ sample_resume_data = {
     ]
 }
 
+
 class ResumeExtractor:
     def __init__(self, resume_data=None):
         if resume_data is None:
@@ -205,6 +206,7 @@ class ResumeExtractor:
         self.certification_dict = {}
         self.project_timelines = []
         self.job_titles = []
+
 
 if __name__ == '__main__':
     resume_extractor = ResumeExtractor(resume_data=sample_resume_data)

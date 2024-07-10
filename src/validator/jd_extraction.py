@@ -2,6 +2,7 @@ import pandas as pd
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+
 class JobDescriptionExtractor:
     def __init__(self):
         self.vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
@@ -36,6 +37,7 @@ class JobDescriptionExtractor:
             'tfidf_keywords': tfidf_keywords,
             'ner_keywords': ner_keywords
         }
+
 
 if __name__ == '__main__':
     job_description = """
