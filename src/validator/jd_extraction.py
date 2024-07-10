@@ -1,6 +1,8 @@
 import pandas as pd
 import spacy
 from sklearn.feature_extraction.text import TfidfVectorizer
+from typing import Dict, Any
+import numpy as np
 
 
 class JobDescriptionExtractor:
@@ -8,7 +10,7 @@ class JobDescriptionExtractor:
         self.vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
         self.nlp = spacy.load('en_core_web_trf')
 
-    def extract_keywords(self, job_description):
+    def extract_keywords(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         doc = self.nlp(job_description)
 
         ner_keywords = {
@@ -21,7 +23,7 @@ class JobDescriptionExtractor:
 
         return ner_keywords
 
-    def extract_keywords_tfidf(self, job_description):
+    def extract_keywords_tfidf(self, job_description: Dict[str, Any]) -> list:
         tfidf_matrix = self.vectorizer.fit_transform([job_description])
         feature_names = self.vectorizer.get_feature_names_out()
         tfidf_scores = tfidf_matrix.toarray()[0]

@@ -1,3 +1,8 @@
 python-dotenv
 communex
 loguru
+scikit-learn
+sentence_transformers
+pandas
+torch
+spacy
