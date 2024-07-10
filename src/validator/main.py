@@ -415,7 +415,7 @@ class Validator(Module):
 
     def get_job_description(self):
         # TODO: Update host and port to match API server.
-        client = ModuleClient(host="ip", port=0, key=self.key)
+        client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
         timestamp = time.time()
@@ -425,7 +425,7 @@ class Validator(Module):
         api_response = asyncio.run(
             client.call(
                 "get_prompt",
-                "the-api-ss58",
+                "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
                 {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
                 timeout=self.call_timeout
             )
