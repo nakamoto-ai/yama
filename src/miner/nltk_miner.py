@@ -59,29 +59,40 @@ class DataLoader:
 
 class RelevanceScorer:
     """
-    A class to compute relevance scores for various text entries based on IDF (Inverse Document Frequency).
+    A class to compute relevance scores for various text entries based on IDF 
+    (Inverse Document Frequency).
 
-    This class preprocesses text, calculates IDF values for words across a set of documents, and uses these to determine relevance scores for jobs, skills, and academic majors based on a given job description.
+    This class preprocesses text, calculates IDF values for words across a set 
+    of documents, and uses these to determine relevance scores for jobs, skills, 
+    and academic majors based on a given job description.
 
     Attributes:
-        data (dict): A dictionary containing datasets used in relevance calculations. Expected keys are 'job_title_data', 'skills', and 'majors'.
-        stop_words (set): A set of stopwords for text preprocessing to ignore common words that might skew relevance calculations.
-        stemmer (PorterStemmer): An instance of PorterStemmer used to stem words during text preprocessing.
-        all_documents (list): A combined list of all documents from job titles, skills, and majors for IDF computation.
+        data (dict): A dictionary containing datasets used in relevance calculations. 
+            Expected keys are 'job_title_data', 'skills', and 'majors'.
+        stop_words (set): A set of stopwords for text preprocessing to ignore common 
+            words that might skew relevance calculations.
+        stemmer (PorterStemmer): An instance of PorterStemmer used to stem words 
+            during text preprocessing.
+        all_documents (list): A combined list of all documents from job titles, skills,
+            and majors for IDF computation.
         idf (dict): A dictionary storing IDF scores for each word in `all_documents`.
 
     Methods:
         preprocess(text):
-            Process the input text by lowering case, removing stopwords, and stemming the remaining words.
+            Process the input text by lowering case, removing stopwords, and stemming 
+            the remaining words.
 
         _calculate_idf(documents):
             Calculate the IDF for each unique word in the provided documents list.
 
         calculate_relevance(text, documents):
-            Calculate the relevance of each document in `documents` with respect to the `text` based on the computed IDF scores.
+            Calculate the relevance of each document in `documents` with respect to 
+            the `text` based on the computed IDF scores.
 
         find_relevant_matches(job_description, num_jobs=3, num_skills=5, num_majors=1):
-            Identify the top relevant job titles, skills, and majors for a given job description. Returns a dictionary with keys 'job_titles', 'skills', and 'major'.
+            Identify the top relevant job titles, skills, and majors for a given job 
+            description. Returns a dictionary with keys 'job_titles', 'skills', and 
+            'major'.
     """
     def __init__(self, data):
         self.stop_words = set(stopwords.words('english'))
