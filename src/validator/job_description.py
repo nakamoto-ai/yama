@@ -1,22 +1,16 @@
 import pandas as pd
-import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
-from hugging_data import insert_name_of_jd_api_getter_here
 from typing import Dict, Any, List
 
 
 class JobDescriptionParser:
     def __init__(self):
-        self.job_description = insert_name_of_jd_api_getter_here()
         self.nlp = spacy.load('en_core_web_trf')
-        self.train_data = [{'description': self.job_description}]
-        self.df = pd.DataFrame(self.train_data)
-        self.vectorizer = self.load_vectorizer()
+        self.load_vectorizer()
 
-    def load_vectorizer(self) -> TfidfVectorizer:
-        tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
-        return tfidf_vectorizer
+    def load_vectorizer(self):
+        self.vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
 
     def extract_keywords_advanced(
         self,
@@ -43,15 +37,21 @@ class JobDescriptionParser:
             'ner_keywords': ner_keywords
         }
 
-    def get_skills_dataframe(self) -> pd.DataFrame:
-        self.vectorizer.fit(self.df['description'])
-        feature_names = self.vectorizer.get_feature_names_out()
-        self.df['keywords'] = self.df['description'].apply(
-            lambda x: self.extract_keywords_advanced(x, feature_names))
-        return self.df
+    def get_skills_dataframe(self, job_description) -> pd.DataFrame:
+        train_data = [{'description': job_description}]
+        df = pd.DataFrame(train_data)
 
-    def get_formatted_jd(self) -> Dict[str, Any]:
-        skills_df = self.get_skills_dataframe()
+        self.vectorizer.fit(df['description'])
+
+        feature_names = self.vectorizer.get_feature_names_out()
+
+        df['keywords'] = df['description'].apply(
+            lambda x: self.extract_keywords_advanced(x, feature_names))
+
+        return df
+
+    def get_formatted_jd(self, df: pd.DataFrame) -> Dict[str, Any]:
+        skills_df = df
         formatted_jd = skills_df['keywords'].iloc[0]
         return formatted_jd
 
