@@ -7,6 +7,7 @@ import json
 from typing import Any
 from abc import ABC, abstractmethod
 
+
 class IOInterface(ABC):
     
     @abstractmethod
@@ -24,6 +25,7 @@ class IOInterface(ABC):
     @abstractmethod
     def read_json_file(self, path: str) -> Any | None:
         pass
+
 
 class IO(IOInterface):
 

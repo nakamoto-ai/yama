@@ -6,22 +6,14 @@ import json
 from html import unescape
 import re
 
-# Initialize SQLite connection and cursor
-con = sqlite3.connect("jobs.db")
-cur = con.cursor()
 
-# Create jobs table if it doesn't exist
-cur.execute("CREATE TABLE IF NOT EXISTS jobs(job TEXT, description TEXT)")
-
-
-def find_jobs(url):
+def find_jobs(url: str, con: sqlite3.connect, cur: sqlite3.connect().cursor):
     try:
         response = requests.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
         job_urls = soup.find_all('a',
                                  {"class": "card-alias-after-overlay hover-underline link-visited-color text-break"})
-
         for job_url in job_urls:
             link = "https://www.builtin.com" + job_url.get('href')
             linkResponse = requests.get(link)
@@ -50,9 +42,10 @@ def find_jobs(url):
 
 
 if __name__ == "__main__":
-    # Loop through the pages to scrape job data
-    for i in range(31, 1034):
-        url = f"https://www.builtin.com/jobs?page={i}"
-        find_jobs(url)
-    print("Successfully created database of jobs")
-    con.close()
+    with sqlite3.connect("jobs.db") as con:
+        cur = con.cursor()
+        cur.execute("CREATE TABLE IF NOT EXISTS jobs(job TEXT, description TEXT)")
+        for i in range(31, 1034):
+            url = f"https://www.builtin.com/jobs?page={i}"
+            find_jobs(url, con, cur)
+        print("Successfully created database of jobs")

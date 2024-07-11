@@ -6,6 +6,7 @@ from loguru import logger
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 from miner.base_miner import BaseMiner
 
+
 class T5Miner(BaseMiner):
     """
     T5Miner class for generating resume JSON from job descriptions using a fine-tuned T5 model.
@@ -22,7 +23,7 @@ class T5Miner(BaseMiner):
             device_map=self.device
         )
 
-    def generate_response(self, prompt: str):
+    def generate_response(self, prompt: str) -> str:
         try:
             input_text = f"generate resume JSON for the following job: {prompt}"
             input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.to(self.device)

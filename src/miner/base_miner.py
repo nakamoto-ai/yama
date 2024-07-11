@@ -7,6 +7,7 @@ from typing import Dict, Any
 from loguru import logger
 from communex.module import Module, endpoint
 
+
 class BaseMiner(Module):
     """
     A base class for implementing mining operations with the ability to process and 

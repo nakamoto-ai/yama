@@ -11,6 +11,7 @@ from loguru import logger
 import random
 import time
 
+
 class ComxClient(ComxInterface):
     """
     A client implementation of the ComxInterface for communication with Communex.

@@ -11,6 +11,8 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
 from miner.base_miner import BaseMiner
+from typing import Any, Dict, List, Tuple
+
 
 class DataLoader:
     """
@@ -33,6 +35,7 @@ class DataLoader:
         load_skills(): Load skills from an external dataset
         load_job_title_data(): Load job title data from an external dataset
     """
+
     def __init__(self):
         self.data = {
             'schools': self.load_school_names(),
@@ -41,21 +44,22 @@ class DataLoader:
             'job_title_data': self.load_job_title_data()
         }
 
-    def load_school_names(self):
+    def load_school_names(self) -> List[str]:
         data = load_dataset("mw4/schools")["train"]
         return [school["name"] for school in data]
 
-    def load_majors(self):
+    def load_majors(self) -> List[str]:
         data = load_dataset("mw4/majors")["train"]
         return [major["name"] for major in data]
 
-    def load_skills(self):
+    def load_skills(self) -> List[str]:
         skills_data = load_dataset("DrDominikDellermann/SkillsDataset")["train"]["skills"]
         return [item['skill'] for sublist in skills_data for item in sublist]
 
-    def load_job_title_data(self):
+    def load_job_title_data(self) -> List[str]:
         job_title_data = load_dataset("jacob-hugging-face/job-descriptions")
         return job_title_data
+
 
 class RelevanceScorer:
     """
@@ -89,7 +93,8 @@ class RelevanceScorer:
             description. Returns a dictionary with keys 'job_titles', 'skills', and 
             'major'.
     """
-    def __init__(self, data):
+
+    def __init__(self, data: Dict[str, Any]):
         self.stop_words = set(stopwords.words('english'))
         self.stemmer = PorterStemmer()
         self.data = data
@@ -100,18 +105,18 @@ class RelevanceScorer:
         )
         self.idf = self._calculate_idf(self.all_documents)
 
-    def preprocess(self, text):
+    def preprocess(self, text: str) -> List[str]:
         words = re.findall(r'\w+', text.lower())
         return [self.stemmer.stem(word) for word in words if word not in self.stop_words]
 
-    def _calculate_idf(self, documents):
+    def _calculate_idf(self, documents: List[str]) -> Dict[str, float]:
         num_docs = len(documents)
         word_in_docs = Counter()
         for doc in documents:
             word_in_docs.update(set(self.preprocess(doc)))
         return {word: log(num_docs / (count + 1)) for word, count in word_in_docs.items()}
 
-    def calculate_relevance(self, text, documents):
+    def calculate_relevance(self, text: str, documents: List[str]) -> Dict[str, float]:
         text_words = self.preprocess(text)
         text_word_count = Counter(text_words)
         scores = {}
@@ -121,7 +126,13 @@ class RelevanceScorer:
             scores[doc] = score
         return scores
 
-    def find_relevant_matches(self, job_description, num_jobs=3, num_skills=5, num_majors=1):
+    def find_relevant_matches(
+            self,
+            job_description: Dict[str, Any],
+            num_jobs: int = 3,
+            num_skills: int = 5,
+            num_majors: int = 1
+    ) -> Dict[str, List[Any]]:
         job_title_scores = self.calculate_relevance(
             job_description,
             self.data['job_title_data']['train']['position_title']
@@ -135,7 +146,7 @@ class RelevanceScorer:
             self.data['majors']
         )
 
-        def normalize_scores(scores):
+        def normalize_scores(scores: Dict[str, float]) -> Dict[str, float]:
             max_score = max(scores.values()) if scores else 1
             if max_score == 0:
                 return {k: 0 for k in scores}
@@ -162,14 +173,15 @@ class RelevanceScorer:
 
         return {
             'job_titles': [(
-                    self.data['job_title_data']['train']['position_title'].index(title),
-                    title
-                )
+                self.data['job_title_data']['train']['position_title'].index(title),
+                title
+            )
                 for title, _ in top_job_titles
             ],
             'skills': [skill for skill, _ in top_skills],
             'major': [major for major, _ in top_major]
         }
+
 
 class Resume:
     """
@@ -196,16 +208,17 @@ class Resume:
         data (dict): A dictionary containing datasets used in relevance calculations. 
             Expected keys are 'job_title_data', 'skills', and 'majors'.
     """
-    def __init__(self, data):
+
+    def __init__(self, data: Dict[str, Any]):
         self.scorer = RelevanceScorer(data)
         self.data = data
 
-    def get_scaled_periods(self, num_jobs, scale_factor):
+    def get_scaled_periods(self, num_jobs: int, scale_factor: float) -> List[float]:
         job_periods = [random.random() for _ in range(num_jobs)]
         sum_periods = sum(job_periods)
         return [x / sum_periods * scale_factor for x in job_periods]
 
-    def get_job_info(self, job_index, data):
+    def get_job_info(self, job_index: int, data: Dict[str, Any]) -> Tuple[str, Any]:
         company_name = data['job_title_data']['train']['company_name'][job_index]
         model_response = json.loads(data['job_title_data']['train']['model_response'][job_index])
         core_responsibilities = model_response.get(
@@ -214,7 +227,7 @@ class Resume:
         )
         return company_name, core_responsibilities
 
-    def get_work_experience(self, relevant_job_titles, graduation_year):
+    def get_work_experience(self, relevant_job_titles: List[str], graduation_year: int) -> List[Dict[str, Any]]:
         work_experience = []
         total_days = 365 * random.randint(5, datetime.now().year - graduation_year + 1)
 
@@ -228,13 +241,15 @@ class Resume:
         start_date = datetime.now() - timedelta(days=total_days)
 
         for index, (job_index, title) in enumerate(relevant_job_titles):
-            job = {}
-            job["title"] = title
-            job["company_name"], job["description"] = self.get_job_info(job_index, self.data)
-            job["start_date"] = start_date.strftime('%m-%Y')
+            job = {
+                "title": title,
+                "company_name": (self.get_job_info(job_index, self.data))[0],
+                "description": (self.get_job_info(job_index, self.data))[1],
+                "start_date": start_date.strftime('%m-%Y')
+            }
             job_duration_days = int(work_experience_coefficients[index] * total_days)
             job["end_date"] = (start_date + timedelta(days=job_duration_days)).strftime('%m-%Y')
-            
+
             work_experience.append(job)
 
             gap_days = random.randint(0, int(work_experience_coefficients[-1] * total_days / 3))
@@ -242,7 +257,7 @@ class Resume:
 
         return work_experience
 
-    def get_education(self, major, graduation_year):
+    def get_education(self, major: str, graduation_year: int) -> List[Dict[str, Any]]:
         education = []
         degree_type = "Bachelor's"
         school_name = random.choice(self.data["schools"])
@@ -251,13 +266,13 @@ class Resume:
             "school": school_name,
             "major": major,
             "degree": degree_type,
-            "start_date": f"0{random.randint(7,9)}-{graduation_year - 4}",
+            "start_date": f"0{random.randint(7, 9)}-{graduation_year - 4}",
             "end_date": f"{graduation_month}-{graduation_year}"
         }
         education.append(degree)
         return education
 
-    def generate_resume(self, job_description):
+    def generate_resume(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         results = self.scorer.find_relevant_matches(job_description)
         relevant_job_titles = results['job_titles']
         relevant_skills = results['skills']
@@ -272,6 +287,7 @@ class Resume:
             "projects": []
         }
         return resume
+
 
 class NltkMiner(BaseMiner):
     """
@@ -292,10 +308,11 @@ class NltkMiner(BaseMiner):
             job description prompt. This method serves as the interface for inputting job 
             descriptions and receiving the generated resumes.
     """
+
     def __init__(self):
         super().__init__()
         self.data_loader = DataLoader()
         self.resume = Resume(self.data_loader.data)
 
-    def generate_response(self, prompt: str):
+    def generate_response(self, prompt: str) -> Dict[str, Any]:
         return self.resume.generate_resume(prompt)

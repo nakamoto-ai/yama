@@ -1,5 +1,5 @@
 
-from typing import Dict
+from typing import Dict, List
 
 
 def conditional_power_scaling(score_dict: Dict[int, float]) -> Dict[int, float]:
@@ -35,7 +35,7 @@ def conditional_power_scaling(score_dict: Dict[int, float]) -> Dict[int, float]:
     return score_dict
 
 
-def normalize_scores(scores):
+def normalize_scores(scores: List[float]) -> List[float]:
     min_score = min(scores)
     max_score = max(scores)
 

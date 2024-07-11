@@ -11,6 +11,7 @@ from .io import IOInterface
 from comx.miner.registry import MinerRegistry
 from comx.miner.module import ScoredMinerModule
 
+
 class WeightIOInterface:
 
     @abstractmethod
@@ -24,6 +25,7 @@ class WeightIOInterface:
     @abstractmethod
     def read_weights(self) -> MinerRegistry | None:
         pass
+
 
 class WeightIO(WeightIOInterface):
     def __init__(self, io: IOInterface, dir_path: str, file_name: str):
@@ -46,12 +48,12 @@ class WeightIO(WeightIOInterface):
 
     def read_weights(self) -> MinerRegistry | None:
         if not self.io.path_exists(self.file_path):
-            return None 
-        
+            return None
+
         json_data = self.io.read_json_file(self.file_path)
         if json_data is None:
-            return None 
-        
+            return None
+
         miner_registry = MinerRegistry()
         for _, miner_data in json_data.items():
             miner_registry.set(ScoredMinerModule(

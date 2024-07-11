@@ -2,23 +2,29 @@ import pandas as pd
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
-from hugging_data import get_validator_dataset
+from hugging_data import insert_name_of_jd_api_getter_here
+from typing import Dict, Any, List
 
 
 class JobDescriptionParser:
     def __init__(self):
-        self.train_data = get_validator_dataset()
-        self.vectorizer = self.load_vectorizer()
-        self.df = pd.DataFrame(self.train_data)
+        self.job_description = insert_name_of_jd_api_getter_here()
         self.nlp = spacy.load('en_core_web_trf')
+        self.train_data = [{'description': self.job_description}]
+        self.df = pd.DataFrame(self.train_data)
+        self.vectorizer = self.load_vectorizer()
 
-    def load_vectorizer(self):
+    def load_vectorizer(self) -> TfidfVectorizer:
         tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
         return tfidf_vectorizer
 
-    def extract_keywords_advanced(self, job_description, tfidf_vectorizer, feature_names):
+    def extract_keywords_advanced(
+        self,
+        job_description: str,
+        feature_names: List[str]
+    ) -> Dict[str, Any]:
         # TF-IDF
-        tfidf_matrix = tfidf_vectorizer.transform([job_description])
+        tfidf_matrix = self.vectorizer.transform([job_description])
         tfidf_scores = tfidf_matrix.toarray()[0]
         tfidf_keywords = [feature_names[i] for i in tfidf_scores.argsort()[-10:][::-1]]
 
@@ -37,24 +43,19 @@ class JobDescriptionParser:
             'ner_keywords': ner_keywords
         }
 
-    def get_random_jd(self):
-        random_jd = self.df.sample(n=1).copy()
-        return random_jd
-
-    def get_skills_dataframe(self):
-        df_sample = self.get_random_jd()
+    def get_skills_dataframe(self) -> pd.DataFrame:
         self.vectorizer.fit(self.df['description'])
         feature_names = self.vectorizer.get_feature_names_out()
-        df_sample['keywords'] = df_sample['description'].apply(
-            lambda x: self.extract_keywords_advanced(x, self.vectorizer, feature_names))
-        return df_sample
+        self.df['keywords'] = self.df['description'].apply(
+            lambda x: self.extract_keywords_advanced(x, feature_names))
+        return self.df
 
-    def get_formatted_jd(self):
+    def get_formatted_jd(self) -> Dict[str, Any]:
         skills_df = self.get_skills_dataframe()
         formatted_jd = skills_df['keywords'].iloc[0]
         return formatted_jd
 
-    def __str__(self):
+    def __str__(self) -> str:
         skills_dict = self.get_skills_dataframe().to_dict(orient='records')
         return str(skills_dict)
 

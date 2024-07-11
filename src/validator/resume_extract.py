@@ -5,8 +5,9 @@ from datasets import load_dataset
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.neighbors import NearestNeighbors
 from fuzzywuzzy import fuzz
-from hugging_data import get_certifications_dataset
+from hugging_data import get_certifications_dataset, get_colleges
 from normalize import DataNormalize
+from typing import Dict, List, Any, Tuple
 
 sample_resume_data = {
     "skills": [
@@ -64,15 +65,14 @@ sample_resume_data = {
 
 
 class ResumeExtractor:
-    def __init__(self, resume_data=None):
+    def __init__(self, resume_data: Dict[str, Any] | None = None):
         if resume_data is None:
             resume_data = sample_resume_data
         self.vectorizer = TfidfVectorizer()
         self.dataset = get_certifications_dataset()
         self.certifications = [cert["Class"] for cert in self.dataset]
-        self.universities = self.load_universities()
+        self.universities = get_colleges()
         self.knn = self.load_knn_model()
-        self.json_file = "C:/Users/naga/Downloads/us-colleges-and-universities.json"
         self.resume_data = resume_data
         self.universal_skills = defaultdict(int)
         self.education_dict = defaultdict(lambda: {"exists": 0, "major": ""})
@@ -83,18 +83,25 @@ class ResumeExtractor:
         self.job_titles = []
         self.data_normalizer = DataNormalize()
 
-    def check_university_exists(self, university_name, universities):
+    def check_university_exists(self, university_name: str, universities: List[str]) -> 0 | 1:
         for uni in universities:
             if uni['name'].lower() == university_name.lower():
                 return 1
         return 0
 
-    def process_skills(self, skills):
+    def process_skills(self, skills: List[str]) -> Dict[str, int]:
         for skill in skills:
             self.universal_skills[skill] += 1
         return self.universal_skills
 
-    def find_nearest_certifications(self, query, knn_model, vectorizer, certifications, threshold=0.5):
+    def find_nearest_certifications(
+        self,
+        query: str,
+        knn_model: NearestNeighbors,
+        vectorizer: TfidfVectorizer,
+        certifications: List[str],
+        threshold: float = 0.5
+    ) -> List[Tuple[str, float]]:
         query_vec = vectorizer.transform([query])
         distances, indices = knn_model.kneighbors(query_vec, n_neighbors=len(certifications))
         nearest_certs = [(certifications[idx], distances[0][i]) for i, idx in enumerate(indices[0])]
@@ -107,12 +114,12 @@ class ResumeExtractor:
 
         return nearest_certs
 
-    def calculate_years(self, start_date, end_date):
+    def calculate_years(self, start_date: str, end_date: str) -> float:
         start = datetime.strptime(start_date, "%Y-%m-%d")
         end = datetime.strptime(end_date, "%Y-%m-%d")
         return (end - start).days / 365.25
 
-    def skills_from_certs(self):
+    def skills_from_certs(self) -> Dict[str, Any]:
         certification_dict = self.certification_dict
         for cert in self.resume_data["certifications"]:
             nearest_certs = self.find_nearest_certifications(cert, self.knn, self.vectorizer, self.certifications, threshold=0.3)
@@ -136,7 +143,7 @@ class ResumeExtractor:
                     self.universal_skills[skill] += 1
         return certification_dict
 
-    def verify_education(self):
+    def verify_education(self) -> Dict[str, Any]:
         education_dict = self.education_dict
         for edu in self.resume_data["education"]:
             university_name = edu["school"]  # Fetch university name directly from the dict
@@ -169,7 +176,7 @@ class ResumeExtractor:
             project_duration = self.calculate_years(project["start_date"], project["end_date"])
             project_timelines.append(project_duration)
 
-    def get_segments(self):
+    def get_segments(self) -> Dict[str, Any]:
         self.universal_skills = self.process_skills(self.resume_data["skills"])
         self.verify_education()
         self.process_work_experience()
@@ -187,12 +194,7 @@ class ResumeExtractor:
         }
         return result
 
-    def load_universities(self):
-        with open(self.json_file, 'r', encoding='utf-8') as f:
-            universities = json.load(f)
-        return universities
-
-    def load_knn_model(self):
+    def load_knn_model(self) -> NearestNeighbors:
         X = self.vectorizer.fit_transform(self.certifications)
         knn = NearestNeighbors(metric='cosine', algorithm='brute')
         knn.fit(X)

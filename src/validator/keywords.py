@@ -3,7 +3,7 @@ import pandas as pd
 
 from collections import defaultdict
 from hugging_data import get_keyword_matrix
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 class JDKeywordMatrix:
@@ -11,7 +11,7 @@ class JDKeywordMatrix:
         self.keyword_matrix = get_keyword_matrix()
         self.occurrence_threshold = 0.5
 
-    def get_normalized_keyword_matrix(self):
+    def get_normalized_keyword_matrix(self) -> Dict[str, Any]:
         occurrence_threshold = self.occurrence_threshold
         normal_keyword_matrix = {}
         abnormal_keyword_matrix = get_keyword_matrix()
@@ -41,7 +41,7 @@ class JDKeywordMatrix:
 
         return dict(keyword_scores)
 
-    def normalize_keyword_occurrences(self, values):
+    def normalize_keyword_occurrences(self, values: List[float]) -> List[float]:
         min_val = min(values)
         max_val = max(values)
         range_val = max_val - min_val

@@ -1,14 +1,17 @@
 
+import pandas as pd
+
 from keywords import JDKeywordMatrix
+from typing import Any, Dict, List, Tuple
 
 
 class JDSkills:
-    def __init__(self, skills_df, job_description):
+    def __init__(self, skills_df: pd.Dataframe, job_description: Dict[str, Any]):
         self.skills_df = skills_df
         self.job_description = job_description
         self.kw_matrix = JDKeywordMatrix()
 
-    def get_skills_maps(self):
+    def get_skills_maps(self) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         job_description = self.job_description
         skills_df = self.skills_df
 
@@ -48,7 +51,7 @@ class JDSkills:
 
         return universal_skills_map, preferred_skills_map
 
-    def get_skills_weights(self):
+    def get_skills_weights(self) -> Tuple[Dict[str, float], Dict[str, float]]:
 
         job_description = self.job_description
         skills_df = self.skills_df

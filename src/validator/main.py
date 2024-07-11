@@ -20,7 +20,7 @@ from communex._common import get_node_url
 from substrateinterface import Keypair
 
 from loguru import logger
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 from adjust_scoring import conditional_power_scaling, normalize_scores
 from ats import ATS
@@ -340,7 +340,7 @@ class Validator(Module):
                 score=v.score
             ))
 
-    def set_weights(self, miners: MinerRegistry):
+    def set_weights(self, miners: MinerRegistry) -> Tuple[List[int], List[int]]:
         """
         Set weights for miners based on their normalized and power scaled scores.
         """
@@ -391,7 +391,7 @@ class Validator(Module):
             logger.info(f"Sleeping for {self.interval} seconds... ")
             time.sleep(self.interval)
 
-    def extract_resumes(self, miner_resumes):
+    def extract_resumes(self, miner_resumes: Dict[str, Any]) -> Dict[str, Any]:
         resume_extractor = ResumeExtractor()
         new_miner_resumes = {}
         for uid, miner_resume in miner_resumes.items():
@@ -400,7 +400,7 @@ class Validator(Module):
             new_miner_resumes[uid] = extracted_resume
         return new_miner_resumes
 
-    def process_job_description(self, job_description: str):
+    def process_job_description(self, job_description: str) -> Dict[str, Any]:
         skills_df = self.jd_keys.get_skills_dataframe()
         processed_job_description = self.jd_keys.get_formatted_jd()
         jd_skills = JDSkills(skills_df, job_description)
@@ -413,7 +413,7 @@ class Validator(Module):
         }
         return scoring_data
 
-    def get_job_description(self):
+    def get_job_description(self) -> Dict[str, Any]:
         client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
@@ -432,15 +432,8 @@ class Validator(Module):
 
         return api_response
 
-    def vote(self, uids, weights):
-        try:
-            self.client.vote(key=self.key, uids=uids, weights=weights, netuid=self.netuid)
-        except Exception as e:
-            logger.error(f"WARNING: Failed to set weights with exception: {e}. Will retry.")
-            sleepy_time = random.uniform(1, 2)
-            time.sleep(sleepy_time)
-            self.client = CommuneClient(get_node_url(use_testnet=self.use_testnet))
-            self.client.vote(key=self.key, uids=uids, weights=weights, netuid=self.netuid)
+    def vote(self, uids: List[int], weights: List[int]):
+        self.client.vote(key=self.key, uids=uids, weights=weights, netuid=self.netuid, use_testnet=self.use_testnet)
 
 
 if __name__ == '__main__':
