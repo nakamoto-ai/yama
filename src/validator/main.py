@@ -272,10 +272,12 @@ class Validator(Module):
                 TODO: Format the data in a way to map uid/ss58 to each response.
         """
         get_miner_prediction = partial(self._get_miner_prediction, job_description)
-        miners = miners.get_all_by_uid()
+        miners_dict = miners.get_all_by_uid()
+
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-            it = executor.map(get_miner_prediction, miners.values())
+            it = executor.map(get_miner_prediction, miners_dict.values())
             miner_answers = [*it]
+
         return miner_answers
 
     def _get_miner_prediction(self, job_description, miner: ScoredMinerModule):
