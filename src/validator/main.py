@@ -30,7 +30,7 @@ from comx.client import ComxClient
 from comx.miner.module import MinerModule, ScoredMinerModule
 from comx.miner.registry import MinerRegistry
 from functools import partial
-from job_description import JobDescriptionParser
+from validator.job_description import JobDescriptionParser
 from resume_extract import ResumeExtractor
 from skills import JDSkills
 from validator.io.weights import WeightIO, WeightIOInterface
@@ -69,30 +69,31 @@ class Validator(Module):
         return modules[self.key.ss58_address]['uid']
 
     async def validate_step(self):
-        miners = self.get_miner_modules()
-        new_registry = self.sync_miners(miners=miners)
-        self.sync_cache(registry=new_registry)
+        try:
+            miners = self.get_miner_modules()
+            new_registry = self.sync_miners(miners=miners)
+            self.sync_cache(registry=new_registry)
 
-        next_miners = self.next_miners(registry=new_registry)
+            next_miners = self.next_miners(registry=new_registry)
+            job_description = await self.get_job_description()
+            resumes = await self.query(miners=next_miners, job_description=job_description)
+            scoring_data = self.process_job_description(job_description=job_description)
 
-        job_description = self.get_job_description()
+            self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
+                           preferred_skills_weights=scoring_data['preferred'])
 
-        resumes = self.query(miners=next_miners, job_description=job_description)
+            next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
+            self.cache(miners=next_miners)
+            uids, weights = self.set_weights(miners)
 
-        scoring_data = self.process_job_description(job_description=job_description)
+            self.weight_io.write_weights(new_registry)
 
-        self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
-                       preferred_skills_weights=scoring_data['preferred'])
-        next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
-        self.cache(miners=next_miners)
-        uids, weights = self.set_weights(miners)
-
-        self.weight_io.write_weights(new_registry)
-
-        if len(self.queried_miners.get_all_by_ss58()) == len(new_registry.get_all_by_ss58()):
-            self.vote(uids, weights)
-            print("Time to vote!")
-            self.queried_miners = MinerRegistry()
+            if len(self.queried_miners.get_all_by_ss58()) == len(new_registry.get_all_by_ss58()):
+                self.vote(uids, weights)
+                print("Time to vote!")
+                self.queried_miners = MinerRegistry()
+        except Exception as e:
+            print(f"Exception validate_step: {e}")
 
     def get_miner_modules(self) -> list[MinerModule]:
         """
@@ -256,7 +257,7 @@ class Validator(Module):
 
         return next_miners
 
-    def query(self, miners: MinerRegistry, job_description: str) -> list[dict | None]:
+    async def query(self, miners: MinerRegistry, job_description: str) -> list[dict | None]:
         """
         Queries all the miners in the MinerRegistry with the provided job description. 
         The miner responses are appended to a list in json format.
@@ -401,8 +402,8 @@ class Validator(Module):
         return new_miner_resumes
 
     def process_job_description(self, job_description: str) -> Dict[str, Any]:
-        skills_df = self.jd_keys.get_skills_dataframe()
-        processed_job_description = self.jd_keys.get_formatted_jd()
+        skills_df = self.jd_keys.get_skills_dataframe(job_description=job_description)
+        processed_job_description = self.jd_keys.get_formatted_jd(df=skills_df)
         jd_skills = JDSkills(skills_df, job_description)
         universal_skills_weights, preferred_skills_weights = jd_skills.get_skills_weights()
         scoring_data = {
@@ -413,7 +414,7 @@ class Validator(Module):
         }
         return scoring_data
 
-    def get_job_description(self) -> Dict[str, Any]:
+    async def get_job_description(self) -> Dict[str, Any]:
         client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
@@ -421,13 +422,11 @@ class Validator(Module):
         data = f"{ss58}{timestamp}"
         signature = self.key.sign(data.encode())
 
-        api_response = asyncio.run(
-            client.call(
-                "get_prompt",
-                "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
-                {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
-                timeout=self.call_timeout
-            )
+        api_response = await client.call(
+            "get_prompt",
+            "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
+            {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
+            timeout=self.call_timeout
         )
 
         return api_response
