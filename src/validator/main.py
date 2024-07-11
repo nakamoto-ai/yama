@@ -426,7 +426,7 @@ class Validator(Module):
             "get_prompt",
             "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
             {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
-            timeout=self.call_timeout
+            timeout=self.call_timeout+10
         )
 
         return api_response
