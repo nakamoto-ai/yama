@@ -280,7 +280,7 @@ class Validator(Module):
 
         return miner_answers
 
-    def _get_miner_prediction(self, job_description, miner: ScoredMinerModule):
+    def _get_miner_prediction(self, job_description, miner: ScoredMinerModule) -> dict[str, Any | None]:
 
         ip, port = miner.get_split_ip_port()
         client = ModuleClient(host=ip, port=int(port), key=self.key)
