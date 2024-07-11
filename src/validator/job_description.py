@@ -5,7 +5,7 @@ import spacy
 from hugging_data import get_validator_dataset
 
 
-class JobDescription:
+class JobDescriptionParser:
     def __init__(self):
         self.train_data = get_validator_dataset()
         self.vectorizer = self.load_vectorizer()
@@ -58,6 +58,7 @@ class JobDescription:
         skills_dict = self.get_skills_dataframe().to_dict(orient='records')
         return str(skills_dict)
 
+
 if __name__ == '__main__':
-    jd = JobDescription()
+    jd = JobDescriptionParser()
     print(f"Skills: {jd.get_formatted_jd()}")

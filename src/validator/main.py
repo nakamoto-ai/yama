@@ -30,7 +30,7 @@ from comx.client import ComxClient
 from comx.miner.module import MinerModule, ScoredMinerModule
 from comx.miner.registry import MinerRegistry
 from functools import partial
-from job_description import JobDescription
+from job_description import JobDescriptionParser
 from resume_extract import ResumeExtractor
 from skills import JDSkills
 from validator.io.weights import WeightIO, WeightIOInterface
@@ -59,7 +59,7 @@ class Validator(Module):
         self.use_testnet = use_testnet
         self.uid = None
         self.queried_miners: MinerRegistry = MinerRegistry()
-        self.jd_keys = JobDescription()
+        self.jd_keys = JobDescriptionParser()
         self.ats = None
 
     def get_validator_uid(self) -> int:
