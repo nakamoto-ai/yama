@@ -6,9 +6,10 @@ import argparse
 import asyncio
 import time
 import os
-import random
 import concurrent.futures
 import nltk
+from functools import partial
+from typing import Any, Dict, List, Tuple
 
 from communex.module.module import Module
 from communex.module.client import ModuleClient
@@ -16,23 +17,22 @@ from communex.client import CommuneClient
 from communex.compat.key import classic_load_key
 from communex._common import get_node_url
 
-
 from substrateinterface import Keypair
 
 from loguru import logger
-from typing import Any, Dict, List, Tuple
 
-from adjust_scoring import conditional_power_scaling, normalize_scores
-from ats import ATS
-from config.validator import ValidatorConfig
 from comx.interface import ComxInterface
 from comx.client import ComxClient
 from comx.miner.module import MinerModule, ScoredMinerModule
 from comx.miner.registry import MinerRegistry
-from functools import partial
+
+from config.validator import ValidatorConfig
+
+from validator.adjust_scoring import conditional_power_scaling, normalize_scores
+from validator.ats import ATS
 from validator.job_description import JobDescriptionParser
-from resume_extract import ResumeExtractor
-from skills import JDSkills
+from validator.resume_extract import ResumeExtractor
+from validator.skills import JDSkills
 from validator.io.weights import WeightIO, WeightIOInterface
 from validator.io.io import IO
 
