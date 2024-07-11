@@ -6,3 +6,4 @@ sentence_transformers
 pandas
 torch
 spacy
+nltk
