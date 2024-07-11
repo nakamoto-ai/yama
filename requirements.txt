@@ -8,3 +8,4 @@ torch
 spacy
 nltk
 datasets
+fuzzywuzzy
