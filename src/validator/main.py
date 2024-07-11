@@ -453,7 +453,9 @@ if __name__ == '__main__':
 
     config = ValidatorConfig(env_path=args.env, ignore_config_file=args.ignore_env_file)
 
+    logger.info("Downloading punkt...")
     nltk.download('punkt')
+    logger.info("Finished")
 
     try:
         keypair = classic_load_key(config.get_key_name())
