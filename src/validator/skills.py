@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Tuple
 
 
 class JDSkills:
-    def __init__(self, skills_df: pd.Dataframe, job_description: Dict[str, Any]):
+    def __init__(self, skills_df: pd.DataFrame, job_description: Dict[str, Any]):
         self.skills_df = skills_df
         self.job_description = job_description
         self.kw_matrix = JDKeywordMatrix()
