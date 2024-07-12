@@ -74,7 +74,7 @@ pm2 start src/validator/main.py --interpreter python --name validator -- [--env 
 
 ## Miner
 
-## Miners
+### Miners
 * [NLTK Miner](#How-To-run-the-nltk-miner)
 * [Huggingface T5 Miner](#How-To-run-the-hf_t5-miner)
 
