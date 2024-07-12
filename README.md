@@ -14,12 +14,12 @@ cp .env.example .env
 ## Validator
 
 ### .env
-| env var | description | required |
-|---------|-------------|----------|
-| `KEY_NAME` | The name of the key registered as a module | ✅ |
-| `TESTNET` | `0` to run on mainnet, `1` to run on testnet (default: `0`) | ❌ |
-| `NETUID` | The netuid of the subnet | ✅ |
-| `VALIDATOR_INTERVAL` | The time between validator steps (default: `10`) | ❌ |
+| environment variable | description                                                 | required |
+|----------------------|-------------------------------------------------------------|----------|
+| `KEY_NAME`           | The name of the key registered as a module                  | ✅       |
+| `TESTNET`            | `0` to run on mainnet, `1` to run on testnet (default: `0`) | ❌       |
+| `NETUID`             | The netuid of the subnet                                    | ✅       |
+| `VALIDATOR_INTERVAL` | The time between validator steps (default: `10`)            | ❌       |
 
 ### Dependencies
 
