@@ -71,3 +71,106 @@ Alternatively, you can run the program in the background using `pm2`:
 ```bash
 pm2 start src/validator/main.py --interpreter python --name validator -- [--env <env-file-path> | --ignore-env-file]
 ```
+
+## Miner
+
+## Miners
+* [NLTK Miner](#How-To-run-the-nltk-miner)
+* [Huggingface T5 Miner](#How-To-run-the-hf_t5-miner)
+
+## How to run the NLTK miner:
+
+### Hardware requirements
+
+Recommended requirements
+
+    CPU: 4-core Intel i5 or equivalent AMD processor, 2.5 GHz-3.5 GHz
+    RAM: 8 GB or more
+    Storage: 20 GB SSD
+    GPU: Not required
+    Network: Broadband internet connection
+
+
+> [!NOTE]
+> Requires Python 3.8 or newer
+
+1) Clone project
+
+`git clone https://github.com/nakamoto-ai/yama`
+
+2) Create virtual environment
+
+```
+cd yama
+python -m venv venv
+source venv/bin/activate
+```
+
+3) Install dependencies
+
+`pip install -r requirements.txt`
+
+4) Register the miner
+
+`comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
+
+6) Run the miner
+
+```
+python src/yama/miner/main.py --miner nltk
+```
+
+(Optional) Run with pm2 
+
+```
+sudo apt install jq -y && sudo apt install npm -y && sudo npm install pm2 -g && pm2 update
+pm2 start --name yama-nltk "python src/yama/miner/main.py --miner nltk"
+```
+
+## How To run the HF_T5 miner:
+
+### Hardware Requirements
+
+Recommended Requirements:
+
+    CPU: 6-core Intel i7 or equivalent AMD processor, 3.0 GHz or higher
+    RAM: 16 GB or more
+    Storage: 20 GB SSD
+    GPU: NVIDIA GPU with at least 6 GB VRAM (e.g., GTX 1060 or better)
+    Network: Broadband internet connection
+
+> [!NOTE]
+> Requires Python 3.8 or newer and PyTorch
+
+1) Clone project
+
+`git clone https://github.com/nakamoto-ai/yama`
+
+2) Create virtual environment
+
+```
+cd yama
+python -m venv venv
+source venv/bin/activate
+```
+
+3) Install dependencies
+
+`pip install -r requirements.txt`
+
+4) Register the miner
+
+`comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
+
+6) Run the miner
+
+```
+python src/yama/miner/main.py --miner t5
+```
+
+(Optional) Run with pm2 
+
+```
+sudo apt install jq -y && sudo apt install npm -y && sudo npm install pm2 -g && pm2 update
+pm2 start --name yama-t5 "python src/yama/miner/main.py --miner t5"
+```
