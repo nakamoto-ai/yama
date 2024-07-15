@@ -4,15 +4,15 @@ Author: Miller
 import random
 import json
 import re
-import nltk
 from datetime import datetime, timedelta
 from collections import Counter
 from math import log
+from typing import Any, Dict, List, Tuple
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
 from miner.base_miner import BaseMiner
-from typing import Any, Dict, List, Tuple
 
 
 class DataLoader:
