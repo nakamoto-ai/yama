@@ -140,7 +140,7 @@ source venv/bin/activate
 
 3) Install dependencies
 
-`pip install -r requirements.txt`
+`pip install -r nltk_miner_requirements.txt`
 
 Install the project in editable mode:
 
@@ -207,7 +207,7 @@ source venv/bin/activate
 
 3) Install dependencies
 
-`pip install -r requirements.txt`
+`pip install -r t5_miner_requirements.txt`
 
 Install the project in editable mode:
 
