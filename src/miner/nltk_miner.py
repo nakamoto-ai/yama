@@ -233,7 +233,12 @@ class Resume:
         )
         return company_name, core_responsibilities
 
-    def get_work_experience(self, relevant_job_titles: List[str], graduation_year: int) -> List[Dict[str, Any]]:
+    def get_work_experience(
+            self, 
+            relevant_job_titles: List[str], 
+            graduation_year: int
+        ) -> List[Dict[str, Any]]:
+        
         work_experience = []
         total_days = 365 * random.randint(5, datetime.now().year - graduation_year + 1)
 
