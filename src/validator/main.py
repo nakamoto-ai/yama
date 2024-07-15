@@ -70,27 +70,40 @@ class Validator(Module):
 
     async def validate_step(self):
         try:
+            print("Starting Asynchronous Validation Step...")
             miners = self.get_miner_modules()
+            print(f"Miners: {miners}")
+            print("Syncing miners...")
             new_registry = self.sync_miners(miners=miners)
             self.sync_cache(registry=new_registry)
 
+            print("Getting next miners to query...")
             next_miners = self.next_miners(registry=new_registry)
+            print("Generating job description...")
             job_description = await self.get_job_description()
+            print("Retrieving resumes...")
             resumes = await self.query(miners=next_miners, job_description=job_description)
+            print("Processing job description")
             scoring_data = self.process_job_description(job_description=job_description)
 
+            print("Creating ATS object...")
             self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
                            preferred_skills_weights=scoring_data['preferred'])
 
+            print("Scoring miners...")
             next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
+            print("Cache-ing miners...")
             self.cache(miners=next_miners)
-            uids, weights = self.set_weights(miners)
 
+            print("Writing weights...")
             self.weight_io.write_weights(new_registry)
 
             if len(self.queried_miners.get_all_by_ss58()) == len(new_registry.get_all_by_ss58()):
-                self.vote(uids, weights)
+                print("Finalizing weights...")
+                uids, weights = self.update_weights()
                 print("Time to vote!")
+                self.vote(uids, weights)
+                print("Voting Complete. Resetting Miner Registry...")
                 self.queried_miners = MinerRegistry()
         except Exception as e:
             print(f"Exception validate_step: {e}")
@@ -341,11 +354,14 @@ class Validator(Module):
                 score=v.score
             ))
 
-    def set_weights(self, miners: MinerRegistry) -> Tuple[List[int], List[int]]:
+    def update_weights(self) -> Tuple[List[int], List[int]]:
         """
         Set weights for miners based on their normalized and power scaled scores.
         """
-        full_score_dict = {k: v.score for k, v in miners.get_all_by_uid()}
+        queried_miners = self.queried_miners.get_all_by_uid()
+        uids = [u for u in queried_miners.keys()]
+        weights = [w.score for w in queried_miners.values()]
+        full_score_dict = {k: v for k, v in zip(uids, weights)}
         weighted_scores: dict[int: float] = {}
 
         abnormal_scores = full_score_dict.values()
