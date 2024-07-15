@@ -140,11 +140,30 @@ source venv/bin/activate
 
 3) Install dependencies
 
-`pip install -r requirements.txt`
+`pip install -r nltk_miner_requirements.txt`
+
+Install the project in editable mode:
+
+```bash
+pip install -e .
+```
 
 4) Register the miner
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
+
+5) Create and set environment variables in a .env file
+
+Create a `.env` file by copying the example environment file `.env.example` to your desired path:
+```bash
+cp .env.example <path-to-env-file>
+```
+
+Then insert your key name values of each into the `.env` file.
+
+```
+KEY_NAME=<your_commune_key>
+```
 
 6) Run the miner
 
@@ -188,11 +207,30 @@ source venv/bin/activate
 
 3) Install dependencies
 
-`pip install -r requirements.txt`
+`pip install -r t5_miner_requirements.txt`
+
+Install the project in editable mode:
+
+```bash
+pip install -e .
+```
 
 4) Register the miner
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
+
+5) Create and set environment variables in a .env file
+
+Create a `.env` file by copying the example environment file `.env.example` to your desired path:
+```bash
+cp .env.example <path-to-env-file>
+```
+
+Then insert your key name values of each into the `.env` file.
+
+```
+KEY_NAME=<your_commune_key>
+```
 
 6) Run the miner
 

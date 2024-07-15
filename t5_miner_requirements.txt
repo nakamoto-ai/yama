@@ -1,0 +1,7 @@
+torch
+loguru
+transformers
+uvicorn
+keylimiter
+communex
+nltk
