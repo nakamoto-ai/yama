@@ -4,6 +4,7 @@ Author: Eddie
 
 import argparse
 import asyncio
+import datasets
 import time
 import os
 import concurrent.futures
@@ -70,27 +71,40 @@ class Validator(Module):
 
     async def validate_step(self):
         try:
+            print("Starting Asynchronous Validation Step...")
             miners = self.get_miner_modules()
+            print(f"Miners: {miners}")
+            print("Syncing miners...")
             new_registry = self.sync_miners(miners=miners)
             self.sync_cache(registry=new_registry)
 
+            print("Getting next miners to query...")
             next_miners = self.next_miners(registry=new_registry)
+            print("Generating job description...")
             job_description = await self.get_job_description()
+            print("Retrieving resumes...")
             resumes = await self.query(miners=next_miners, job_description=job_description)
+            print("Processing job description")
             scoring_data = self.process_job_description(job_description=job_description)
 
+            print("Creating ATS object...")
             self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
                            preferred_skills_weights=scoring_data['preferred'])
 
+            print("Scoring miners...")
             next_miners = self.score(miners=next_miners, resumes=resumes, scoring_data=scoring_data)
+            print("Cache-ing miners...")
             self.cache(miners=next_miners)
-            uids, weights = self.set_weights(miners)
 
+            print("Writing weights...")
             self.weight_io.write_weights(new_registry)
 
             if len(self.queried_miners.get_all_by_ss58()) == len(new_registry.get_all_by_ss58()):
-                self.vote(uids, weights)
+                print("Finalizing weights...")
+                uids, weights = self.update_weights()
                 print("Time to vote!")
+                self.vote(uids, weights)
+                print("Voting Complete. Resetting Miner Registry...")
                 self.queried_miners = MinerRegistry()
         except Exception as e:
             print(f"Exception validate_step: {e}")
@@ -341,11 +355,14 @@ class Validator(Module):
                 score=v.score
             ))
 
-    def set_weights(self, miners: MinerRegistry) -> Tuple[List[int], List[int]]:
+    def update_weights(self) -> Tuple[List[int], List[int]]:
         """
         Set weights for miners based on their normalized and power scaled scores.
         """
-        full_score_dict = {k: v.score for k, v in miners.get_all_by_uid()}
+        queried_miners = self.queried_miners.get_all_by_uid()
+        uids = [u for u in queried_miners.keys()]
+        weights = [w.score for w in queried_miners.values()]
+        full_score_dict = {k: v for k, v in zip(uids, weights)}
         weighted_scores: dict[int: float] = {}
 
         abnormal_scores = full_score_dict.values()
@@ -414,7 +431,7 @@ class Validator(Module):
         }
         return scoring_data
 
-    async def get_job_description(self) -> Dict[str, Any]:
+    async def get_job_description(self) -> Dict[str, Any] | None:
         client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
@@ -422,13 +439,18 @@ class Validator(Module):
         data = f"{ss58}{timestamp}"
         signature = self.key.sign(data.encode())
 
-        api_response = await client.call(
-            "get_prompt",
-            "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
-            {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
-            timeout=self.call_timeout+10
-        )
-
+        try:
+            api_response = await client.call(
+                "get_prompt",
+                "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
+                {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
+                timeout=self.call_timeout+120
+            )
+        except Exception as e:
+            print(f"WARNING: JD API Connection Error (getting record from public hf repo): {e}")
+            dataset = datasets.load_dataset("nakamoto-yama/job-descriptions-public")
+            api_response = dataset['train'].shuffle(seed=42).select([0])[0]
+        print(f"API Response: {api_response}")
         return api_response
 
     def vote(self, uids: List[int], weights: List[int]):
