@@ -149,14 +149,14 @@ source venv/bin/activate
 6) Run the miner
 
 ```
-python src/yama/miner/main.py --miner nltk
+python src/miner/main.py --miner nltk
 ```
 
 (Optional) Run with pm2 
 
 ```
 sudo apt install jq -y && sudo apt install npm -y && sudo npm install pm2 -g && pm2 update
-pm2 start --name yama-nltk "python src/yama/miner/main.py --miner nltk"
+pm2 start --name yama-nltk "python src/miner/main.py --miner nltk"
 ```
 
 ## How To run the HF_T5 miner:
@@ -197,12 +197,12 @@ source venv/bin/activate
 6) Run the miner
 
 ```
-python src/yama/miner/main.py --miner t5
+python src/miner/main.py --miner t5
 ```
 
 (Optional) Run with pm2 
 
 ```
 sudo apt install jq -y && sudo apt install npm -y && sudo npm install pm2 -g && pm2 update
-pm2 start --name yama-t5 "python src/yama/miner/main.py --miner t5"
+pm2 start --name yama-t5 "python src/miner/main.py --miner t5"
 ```
