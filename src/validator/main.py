@@ -438,12 +438,16 @@ class Validator(Module):
         data = f"{ss58}{timestamp}"
         signature = self.key.sign(data.encode())
 
-        api_response = await client.call(
-            "get_prompt",
-            "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
-            {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
-            timeout=self.call_timeout+10
-        )
+        try:
+            api_response = await client.call(
+                "get_prompt",
+                "5E5LLGg2jFesFCQsn5N4jCS1Rng4MFxRuBVyvb2zWEETAUbj",
+                {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
+                timeout=self.call_timeout+10
+            )
+            print(f"API Response: {api_response}")
+        except Exception as e:
+            print(f"JD API Connection Error: {e}")
 
         return api_response
 
