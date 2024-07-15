@@ -25,13 +25,16 @@ The Yama subnet is a cutting-edge system dedicated to enhancing the recruitment 
 3. Mining: Miners generate resumes based on the JDs.
 4. Feedback Loop: Validators score the miners' responses and provide feedback ("shortlisted" or "not shortlisted") based on a predefined threshold to ensure continuous improvement.
 
-## Benefits
+## Product
 
-- For Students: Yama provides a streamlined path to create professional resumes that stand out.
-- For Companies: It offers precise tools for evaluating candidate resumes, making the hiring process more efficient.
-- For Recruiters: Yama serves as a comprehensive solution for managing and assessing large volumes of resumes quickly and accurately.
+Introducing **Yama** – the ultimate tool for streamlining the resume creation and evaluation process. Yama offers two powerful features designed to enhance both the job application and hiring experience:
 
-TODO: Finalize this document, i.e. make sure all steps are included.
+1. ATS Checker: Upload resumes and job descriptions to receive a detailed score, ensuring candidates' resumes align perfectly with job requirements.
+2. Resume Generation: Simply attach a job description and fill in your skills to generate a customized resume tailored specifically for that job.
+
+For Students: Yama provides a streamlined path to create professional resumes that stand out in the competitive job market.
+For Companies: Yama offers precise tools for evaluating candidate resumes, making the hiring process more efficient and effective.
+For Recruiters: Yama serves as a comprehensive solution for managing and assessing large volumes of resumes quickly and accurately, helping you find the best candidates with ease.
 
 ## Validator
 
