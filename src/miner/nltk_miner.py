@@ -4,6 +4,7 @@ Author: Miller
 import random
 import json
 import re
+import nltk
 from datetime import datetime, timedelta
 from collections import Counter
 from math import log
@@ -95,6 +96,11 @@ class RelevanceScorer:
     """
 
     def __init__(self, data: Dict[str, Any]):
+        try:
+            nltk.data.find('corpora/stopwords')
+        except LookupError:
+            nltk.download('stopwords')
+
         self.stop_words = set(stopwords.words('english'))
         self.stemmer = PorterStemmer()
         self.data = data
