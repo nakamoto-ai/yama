@@ -146,13 +146,17 @@ source venv/bin/activate
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
 
-5) Set environment variables
+5) Create and set environment variables in a .env file
 
-Before running the miner, you need to set the following environment variables:
-
+Create a `.env` file by copying the example environment file `.env.example` to your desired path:
 ```bash
-export KEY_NAME=<your_commune_key>
-export NETUID=30
+cp .env.example <path-to-env-file>
+```
+
+Then insert your key name values of each into the `.env` file.
+
+```
+KEY_NAME=<your_commune_key>
 ```
 
 6) Run the miner
@@ -197,19 +201,26 @@ source venv/bin/activate
 
 3) Install dependencies
 
-`pip install -r requirements.txt`
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
 
 4) Register the miner
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
 
-5) Set environment variables
+5) Create and set environment variables in a .env file
 
-Before running the miner, you need to set the following environment variables:
-
+Create a `.env` file by copying the example environment file `.env.example` to your desired path:
 ```bash
-export KEY_NAME=<your_commune_key>
-export NETUID=30
+cp .env.example <path-to-env-file>
+```
+
+Then insert your key name values of each into the `.env` file.
+
+```
+KEY_NAME=<your_commune_key>
 ```
 
 6) Run the miner
