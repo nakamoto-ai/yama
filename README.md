@@ -146,6 +146,15 @@ source venv/bin/activate
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
 
+5) Set environment variables
+
+Before running the miner, you need to set the following environment variables:
+
+```bash
+export KEY_NAME=<your_commune_key>
+export NETUID=30
+```
+
 6) Run the miner
 
 ```
@@ -193,6 +202,15 @@ source venv/bin/activate
 4) Register the miner
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
+
+5) Set environment variables
+
+Before running the miner, you need to set the following environment variables:
+
+```bash
+export KEY_NAME=<your_commune_key>
+export NETUID=30
+```
 
 6) Run the miner
 
