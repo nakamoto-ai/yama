@@ -142,6 +142,12 @@ source venv/bin/activate
 
 `pip install -r requirements.txt`
 
+Install the project in editable mode:
+
+```bash
+pip install -e .
+```
+
 4) Register the miner
 
 `comx module register <name> <your_commune_key> --netuid [NETUID] --ip <your_ip> --port <your_port>`
@@ -201,8 +207,11 @@ source venv/bin/activate
 
 3) Install dependencies
 
+`pip install -r requirements.txt`
+
+Install the project in editable mode:
+
 ```bash
-pip install -r requirements.txt
 pip install -e .
 ```
 
