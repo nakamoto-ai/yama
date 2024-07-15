@@ -4,6 +4,7 @@ Author: Eddie
 
 import argparse
 import asyncio
+import datasets
 import time
 import os
 import concurrent.futures
@@ -430,7 +431,7 @@ class Validator(Module):
         }
         return scoring_data
 
-    async def get_job_description(self) -> Dict[str, Any]:
+    async def get_job_description(self) -> Dict[str, Any] | None:
         client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
@@ -445,10 +446,11 @@ class Validator(Module):
                 {"ss58": ss58, "timestamp": timestamp, "signature": signature.hex()},
                 timeout=self.call_timeout+120
             )
-            print(f"API Response: {api_response}")
         except Exception as e:
-            print(f"JD API Connection Error: {e}")
-
+            print(f"WARNING: JD API Connection Error (getting record from public hf repo): {e}")
+            dataset = datasets.load_dataset("nakamoto-yama/job-descriptions-public")
+            api_response = dataset['train'].shuffle(seed=42).select([0])[0]
+        print(f"API Response: {api_response}")
         return api_response
 
     def vote(self, uids: List[int], weights: List[int]):
