@@ -30,5 +30,5 @@ def get_keyword_matrix() -> Dict[str, Dict[str, int]]:
 
 
 def get_colleges() -> List[Dict[str, Any]]:
-    dataset = load_dataset("nakamoto-yama/us-colleges-and-universities", split="train").to_dict()
+    dataset = load_dataset("nakamoto-yama/us-colleges-universities", split="train").to_dict()
     return dataset
