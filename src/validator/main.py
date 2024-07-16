@@ -82,12 +82,11 @@ class Validator(Module):
             print("Getting next miners to query...")
             next_miners = self.next_miners(registry=new_registry)
             print("Generating job description...")
-            jd = await self.get_job_description()
-            job_description = jd['Description']
+            job_description = await self.get_job_description()
             print("Retrieving resumes...")
             resumes = await self.query(miners=next_miners, job_description=job_description)
             print("Processing job description")
-            scoring_data = self.process_job_description(job_description=jd)
+            scoring_data = self.process_job_description(job_description=job_description)
 
             print("Creating ATS object...")
             self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
@@ -433,7 +432,7 @@ class Validator(Module):
             new_miner_resumes[uid] = extracted_resume
         return new_miner_resumes
 
-    def process_job_description(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
+    def process_job_description(self, job_description: str) -> Dict[str, Any]:
         skills_df = self.jd_keys.get_skills_dataframe(job_description=job_description)
         processed_job_description = self.jd_keys.get_formatted_jd(df=skills_df)
         jd_skills = JDSkills(skills_df, job_description)
@@ -462,13 +461,13 @@ class Validator(Module):
                 timeout=self.call_timeout+120
             )
         except Exception as e:
-            print(f"WARNING: JD API Connection Error: getting record from public hf repo"
+            print("WARNING: JD API Connection Error: getting record from public hf repo"
                   "(most likely validator has not set weights and is not recognized yet; "
-                  "if issue persists for multiple steps, message Yama's discord channel): {e}")
+                  f"if issue persists for multiple steps, message Yama's discord channel)")
             dataset = datasets.load_dataset("nakamoto-yama/job-descriptions-public")
             api_response = dataset['train'].shuffle(seed=42).select([0])[0]
         print(f"API Response: {api_response}")
-        return api_response
+        return api_response['Description']
 
     def vote(self, uids: List[int], weights: List[int]):
         self.client.vote(key=self.key, uids=uids, weights=weights, netuid=self.netuid, use_testnet=self.use_testnet)
