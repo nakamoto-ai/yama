@@ -53,10 +53,7 @@ class JDSkills:
 
     def get_skills_weights(self) -> Tuple[Dict[str, float], Dict[str, float]]:
 
-        job_description = self.job_description
-        skills_df = self.skills_df
-
-        universal_skills_map, preferred_skills_map = self.get_skills_maps(job_description, skills_df)
+        universal_skills_map, preferred_skills_map = self.get_skills_maps()
 
         u_skills_list = universal_skills_map.keys()
         p_skills_list = preferred_skills_map.keys()
