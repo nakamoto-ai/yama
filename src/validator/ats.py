@@ -185,6 +185,7 @@ class ATS:
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         resume_data = self.resume_data
+        print(f"Resume Data: {resume_data}")
         reformatted_job_description = self.reformat_job_description(job_description)
         job_description = reformatted_job_description
         education_score = self.score_education(job_description["education"], resume_data["education"])
