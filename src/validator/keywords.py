@@ -17,7 +17,7 @@ class JDKeywordMatrix:
         abnormal_keyword_matrix = get_keyword_matrix()
 
         for keyword, occurrences in zip(abnormal_keyword_matrix['Keyword'], abnormal_keyword_matrix['Co-occurrences']):
-            concurrent_keys = occurrences.keys()
+            concurrent_keys = [occur for occur in occurrences.keys()]
             num_occurs = [v+1 if v is not None else 1 for v in occurrences.values()]
             normal_occurs = self.normalize_keyword_occurrences(num_occurs)
             new_occurrences = {}
