@@ -82,11 +82,12 @@ class Validator(Module):
             print("Getting next miners to query...")
             next_miners = self.next_miners(registry=new_registry)
             print("Generating job description...")
-            job_description = await self.get_job_description()
+            jd = await self.get_job_description()
+            job_description = jd['Description']
             print("Retrieving resumes...")
             resumes = await self.query(miners=next_miners, job_description=job_description)
             print("Processing job description")
-            scoring_data = self.process_job_description(job_description=job_description)
+            scoring_data = self.process_job_description(job_description=jd)
 
             print("Creating ATS object...")
             self.ats = ATS(skills_df=scoring_data['skills'], universal_skills_weights=scoring_data['universal'],
@@ -281,7 +282,7 @@ class Validator(Module):
 
         return next_miners
 
-    async def query(self, miners: MinerRegistry, job_description: Dict[str, Any]) -> list[dict | None]:
+    async def query(self, miners: MinerRegistry, job_description: str) -> list[dict | None]:
         """
         Queries all the miners in the MinerRegistry with the provided job description. 
         The miner responses are appended to a list in json format.
@@ -306,10 +307,11 @@ class Validator(Module):
 
         return miner_answers
 
-    def _get_miner_prediction(self, job_description: Dict[str, Any], miner: ScoredMinerModule) -> dict[str, Any] | None:
+    def _get_miner_prediction(self, job_description: str, miner: ScoredMinerModule) -> dict[str, Any] | None:
 
         ip, port = miner.get_split_ip_port()
-        print(f"IP: {ip}, Port: {port}")
+        if ip is None or port is None:
+            return None
         client = ModuleClient(host=ip, port=int(port), key=self.key)
         uid = miner.uid
 
