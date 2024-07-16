@@ -35,8 +35,7 @@ class JDKeywordMatrix:
         for skill in skills:
             keyword_scores[skill] += 1
             if skill in keyword_matrix:
-                print(f"Keyword Matrix Skill: {keyword_matrix[skill]}")
-                for concur_keyword, occur_score in keyword_matrix[skill]:
+                for concur_keyword, occur_score in keyword_matrix[skill].items():
                     keyword_scores[concur_keyword] += occur_score
             # TODO: possibly use knn/similarity to get 'best match' to skill if not directly found in matrix
 
