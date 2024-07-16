@@ -176,9 +176,17 @@ class ATS:
     def score_similarity(self, resume_text: str, job_description_text: str) -> int:
         return 1 if self.check_similarity(resume_text, job_description_text) else 0
 
+    def reformat_job_description(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
+        reformatted_job_description = {}
+        for k, v in job_description['ner_keywords']:
+            reformatted_job_description[k] = v
+        reformatted_job_description['skills'] += job_description['tfidf_keywords']
+        return reformatted_job_description
+
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         resume_data = self.resume_data
-        print(f"Job Description: {job_description}")
+        reformatted_job_description = self.reformat_job_description(job_description)
+        job_description = reformatted_job_description
         education_score = self.score_education(job_description["education"], resume_data["education"])
         experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
         skills_score = self.score_skills(job_description["skills"], resume_data["skills"])

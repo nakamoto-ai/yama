@@ -1,0 +1,13 @@
+numpy
+pandas
+scikit-learn
+torch
+nltk
+sentence_transformers
+datasets
+spacy
+loguru
+communex
+substrateinterface
+dotenv
+fuzzywuzzy
