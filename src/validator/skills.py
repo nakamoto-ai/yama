@@ -64,6 +64,8 @@ class JDSkills:
         universal_skills_weights = {}
         preferred_skills_weights = {}
 
+        print(f"Universal Keyword Scores: {u_keyword_scores}")
+
         for u_keyword, u_score in u_keyword_scores:
             if u_keyword in u_skills_list:
                 universal_skills_weights[u_keyword] = universal_skills_map[u_keyword] * u_score
