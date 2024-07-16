@@ -17,7 +17,7 @@ def get_certifications_dataset() -> Dict[str, str]:
             'Skills Gained': skills_gained[i]
         }
         new_dataset.append(new_record)
-    return dataset
+    return new_dataset
 
 
 def get_job_title_mappings() -> Dict[str, str]:
