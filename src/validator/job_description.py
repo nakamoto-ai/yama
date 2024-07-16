@@ -14,7 +14,7 @@ class JobDescriptionParser:
 
     def extract_keywords_advanced(
         self,
-        job_description: str,
+        job_description: Dict[str, Any],
         feature_names: List[str]
     ) -> Dict[str, Any]:
         # TF-IDF
@@ -37,7 +37,7 @@ class JobDescriptionParser:
             'ner_keywords': ner_keywords
         }
 
-    def get_skills_dataframe(self, job_description) -> pd.DataFrame:
+    def get_skills_dataframe(self, job_description: Dict[str, Any]) -> pd.DataFrame:
         train_data = [{'description': job_description}]
         df = pd.DataFrame(train_data)
 

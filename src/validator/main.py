@@ -271,13 +271,14 @@ class Validator(Module):
 
         return next_miners
 
-    async def query(self, miners: MinerRegistry, job_description: str) -> list[dict | None]:
+    async def query(self, miners: MinerRegistry, job_description: Dict[str, Any]) -> list[dict | None]:
         """
         Queries all the miners in the MinerRegistry with the provided job description. 
         The miner responses are appended to a list in json format.
 
         Args:
             miners: The MinerRegistry containing the miners that will be queried.
+            job_description: Dictionary containing job description info
 
         Returns:
             list[dict | None]:
@@ -295,7 +296,7 @@ class Validator(Module):
 
         return miner_answers
 
-    def _get_miner_prediction(self, job_description: str, miner: ScoredMinerModule) -> dict[str, Any | None]:
+    def _get_miner_prediction(self, job_description: Dict[str, Any], miner: ScoredMinerModule) -> dict[str, Any] | None:
 
         ip, port = miner.get_split_ip_port()
         client = ModuleClient(host=ip, port=int(port), key=self.key)
@@ -418,7 +419,7 @@ class Validator(Module):
             new_miner_resumes[uid] = extracted_resume
         return new_miner_resumes
 
-    def process_job_description(self, job_description: str) -> Dict[str, Any]:
+    def process_job_description(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         skills_df = self.jd_keys.get_skills_dataframe(job_description=job_description)
         processed_job_description = self.jd_keys.get_formatted_jd(df=skills_df)
         jd_skills = JDSkills(skills_df, job_description)
@@ -431,7 +432,7 @@ class Validator(Module):
         }
         return scoring_data
 
-    async def get_job_description(self) -> Dict[str, Any] | None:
+    async def get_job_description(self) -> Dict[str, Any]:
         client = ModuleClient(host="213.173.105.83", port=56709, key=self.key)
 
         ss58 = self.key.ss58_address
@@ -451,7 +452,7 @@ class Validator(Module):
                   "(most likely validator has not set weights and is not recognized yet; "
                   "if issue persists for multiple steps, message Yama's discord channel): {e}")
             dataset = datasets.load_dataset("nakamoto-yama/job-descriptions-public")
-            api_response = dataset['train'].shuffle(seed=42).select([0])[0]['Description']
+            api_response = dataset['train'].shuffle(seed=42).select([0])[0]
         print(f"API Response: {api_response}")
         return api_response
 
