@@ -15,6 +15,7 @@ class JDKeywordMatrix:
         occurrence_threshold = self.occurrence_threshold
         normal_keyword_matrix = {}
         abnormal_keyword_matrix = get_keyword_matrix()
+
         for keyword, occurrences in abnormal_keyword_matrix.items():
             concurrent_keys = occurrences.keys()
             num_occurs = occurrences.values()
