@@ -5,3 +5,4 @@ uvicorn
 keylimiter
 communex
 nltk
+sentencepiece
