@@ -307,23 +307,24 @@ class Validator(Module):
 
         return miner_answers
 
-    def _get_miner_prediction(self, job_description: str, miner: ScoredMinerModule) -> dict[str, Any] | None:
+    def _get_miner_prediction(self, job_description: str, miner: ScoredMinerModule) -> dict[str, Any]:
 
         ip, port = miner.get_split_ip_port()
-        if ip is None or port is None:
-            return None
-        client = ModuleClient(host=ip, port=int(port), key=self.key)
         uid = miner.uid
-
-        try:
-            miner_answer = asyncio.run(
-                client.call("generate", miner.ss58, {"prompt": job_description}, timeout=self.call_timeout)
-            )
-
-            miner_prediction = miner_answer["answer"]
-        except Exception as e:
-            logger.error(f"Error getting miner response: {e}")
+        if ip is None or port is None or ip == 'None' or port == 'None':
             miner_prediction = None
+        else:
+            client = ModuleClient(host=ip, port=int(port), key=self.key)
+
+            try:
+                miner_answer = asyncio.run(
+                    client.call("generate", miner.ss58, {"prompt": job_description}, timeout=self.call_timeout)
+                )
+
+                miner_prediction = miner_answer["answer"]
+            except Exception as e:
+                logger.error(f"Error getting miner response: {e}")
+                miner_prediction = None
         miner_prediction = {str(uid): miner_prediction}
         return miner_prediction
 
