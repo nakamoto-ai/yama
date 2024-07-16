@@ -5,3 +5,5 @@ uvicorn
 keylimiter
 communex
 nltk
+sentencepiece
+accelerate
