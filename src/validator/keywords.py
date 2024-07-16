@@ -15,7 +15,7 @@ class JDKeywordMatrix:
         occurrence_threshold = self.occurrence_threshold
         normal_keyword_matrix = {}
         abnormal_keyword_matrix = get_keyword_matrix()
-        print(f"Keyword Matrix Keys: {abnormal_keyword_matrix.keys()}")
+        print(f"Keyword Matrix Keywords: {abnormal_keyword_matrix['Keyword'][0:10]}")
 
         for keyword, occurrences in abnormal_keyword_matrix.items():
             print(f"Occurrences: {occurrences}")
