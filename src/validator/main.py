@@ -9,6 +9,7 @@ import time
 import os
 import concurrent.futures
 import nltk
+import traceback
 from functools import partial
 from typing import Any, Dict, List, Tuple
 
@@ -107,7 +108,16 @@ class Validator(Module):
                 print("Voting Complete. Resetting Miner Registry...")
                 self.queried_miners = MinerRegistry()
         except Exception as e:
-            print(f"Exception validate_step: {e}")
+            # Print the traceback
+            print("Exception in 'validate_step':")
+            traceback.print_exc()
+            # Get the line number
+            tb = e.__traceback__
+            while tb is not None:
+                print(f"Exception type: {e.__class__.__name__}")
+                print(f"File: {tb.tb_frame.f_code.co_filename}")
+                print(f"Line number: {tb.tb_lineno}")
+                tb = tb.tb_next
 
     def get_miner_modules(self) -> list[MinerModule]:
         """
