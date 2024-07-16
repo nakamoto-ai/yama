@@ -183,24 +183,16 @@ class ATS:
         reformatted_job_description['skills'] += job_description['tfidf_keywords']
         return reformatted_job_description
 
+    def resume_not_found(self) -> bool:
+        if isinstance(self.resume_data, dict):
+            for key, val in self.resume_data.items():
+                if not key.isdigit() or val is not None:
+                    return False
+            return True
+        return False
+
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         resume_data = self.resume_data
-        print(f"Resume Data: {resume_data}")
-        reformatted_job_description = self.reformat_job_description(job_description)
-        job_description = reformatted_job_description
-        education_score = self.score_education(job_description["education"], resume_data["education"])
-        experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
-        skills_score = self.score_skills(job_description["skills"], resume_data["skills"])
-        projects_score = self.score_projects(resume_data["projects"])
-        certifications_score = self.score_certifications(job_description["certifications"], resume_data["certifications"])
-
-        # Combine all sections of the resume to check semantics and similarity
-        resume_text = ' '.join([work["roles"] for work in resume_data["work_experience"]])
-        semantics_score = self.score_semantics(resume_text)
-        similarity_score = self.score_similarity(resume_text, ' '.join(job_description["skills"]))
-
-        total_score = (education_score + experience_score + skills_score + projects_score +
-                       certifications_score + semantics_score + similarity_score)
 
         min_education_score = 1
         min_experience_score = 1
@@ -210,6 +202,54 @@ class ATS:
         min_semantics_score = 1
         min_similarity_score = 1
         min_overall_score = 5.5
+
+        if self.resume_not_found():
+            education_score = min_education_score
+            experience_score = min_experience_score
+            skills_score = min_skills_score
+            projects_score = min_projects_score
+            certifications_score = min_certifications_score
+            semantics_score = min_semantics_score
+            similarity_score = min_similarity_score
+        else:
+            reformatted_job_description = self.reformat_job_description(job_description)
+            job_description = reformatted_job_description
+
+            if 'education' in resume_data:
+                education_score = self.score_education(job_description["education"], resume_data["education"])
+            else:
+                education_score = min_education_score
+
+            if 'work_experience' in resume_data:
+                experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
+            else:
+                experience_score = min_experience_score
+
+            if 'skills' in resume_data:
+                skills_score = self.score_skills(job_description["skills"], resume_data["skills"])
+            else:
+                skills_score = min_skills_score
+
+            if 'projects' in resume_data:
+                projects_score = self.score_projects(resume_data["projects"])
+            else:
+                projects_score = min_projects_score
+
+            if 'certifications' in resume_data:
+                certifications_score = self.score_certifications(job_description["certifications"], resume_data["certifications"])
+            else:
+                certifications_score = min_certifications_score
+
+            if 'work_experience' in resume_data and 'skills' in resume_data:
+                resume_text = ' '.join([work["roles"] for work in resume_data["work_experience"]])
+                semantics_score = self.score_semantics(resume_text)
+                similarity_score = self.score_similarity(resume_text, ' '.join(job_description["skills"]))
+            else:
+                semantics_score = min_semantics_score
+                similarity_score = min_similarity_score
+
+        total_score = (education_score + experience_score + skills_score + projects_score +
+                       certifications_score + semantics_score + similarity_score)
 
         # If similarity score is high, set total_score to 0
         if similarity_score == 1:
