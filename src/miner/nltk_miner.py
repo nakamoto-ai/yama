@@ -4,15 +4,15 @@ Author: Miller
 import random
 import json
 import re
-import nltk
 from datetime import datetime, timedelta
 from collections import Counter
 from math import log
+from typing import Any, Dict, List, Tuple
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
 from miner.base_miner import BaseMiner
-from typing import Any, Dict, List, Tuple
 
 
 class DataLoader:
@@ -233,7 +233,12 @@ class Resume:
         )
         return company_name, core_responsibilities
 
-    def get_work_experience(self, relevant_job_titles: List[str], graduation_year: int) -> List[Dict[str, Any]]:
+    def get_work_experience(
+            self, 
+            relevant_job_titles: List[str], 
+            graduation_year: int
+        ) -> List[Dict[str, Any]]:
+        
         work_experience = []
         total_days = 365 * random.randint(5, datetime.now().year - graduation_year + 1)
 
