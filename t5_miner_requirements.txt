@@ -6,3 +6,4 @@ keylimiter
 communex
 nltk
 sentencepiece
+accelerate
