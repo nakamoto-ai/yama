@@ -178,7 +178,7 @@ class ATS:
 
     def reformat_job_description(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         reformatted_job_description = {}
-        for k, v in job_description['ner_keywords']:
+        for k, v in job_description['ner_keywords'].items():
             reformatted_job_description[k] = v
         reformatted_job_description['skills'] += job_description['tfidf_keywords']
         return reformatted_job_description
