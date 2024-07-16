@@ -6,6 +6,17 @@ from datasets import load_dataset
 
 def get_certifications_dataset() -> Dict[str, str]:
     dataset = load_dataset("nakamoto-yama/certifications", split="train").to_dict()
+    ids = dataset['id']
+    classes = dataset['Class']
+    skills_gained = dataset['Skills Gained']
+    new_dataset = []
+    for i in range(len(ids)):
+        new_record = {
+            'id': ids[i],
+            'Class': classes[i],
+            'Skills Gained': skills_gained[i]
+        }
+        new_dataset.append(new_record)
     return dataset
 
 

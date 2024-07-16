@@ -70,7 +70,7 @@ class ResumeExtractor:
             resume_data = sample_resume_data
         self.vectorizer = TfidfVectorizer()
         self.dataset = get_certifications_dataset()
-        self.certifications = [cert for cert in self.dataset["Class"]]
+        self.certifications = [cert["Class"] for cert in self.dataset]
         self.universities = get_colleges()
         self.knn = self.load_knn_model()
         self.resume_data = resume_data
