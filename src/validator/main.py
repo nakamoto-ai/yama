@@ -309,6 +309,7 @@ class Validator(Module):
     def _get_miner_prediction(self, job_description: Dict[str, Any], miner: ScoredMinerModule) -> dict[str, Any] | None:
 
         ip, port = miner.get_split_ip_port()
+        print(f"IP: {ip}, Port: {port}")
         client = ModuleClient(host=ip, port=int(port), key=self.key)
         uid = miner.uid
 
