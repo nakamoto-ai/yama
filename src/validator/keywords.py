@@ -27,9 +27,8 @@ class JDKeywordMatrix:
         return normal_keyword_matrix
 
     def get_keyword_scores_for_skills(self, skills: List[str]) -> Dict[str, float]:
-        occurrence_threshold = self.occurrence_threshold
         keyword_scores = defaultdict(float)
-        keyword_matrix = self.get_normalized_keyword_matrix(occurrence_threshold)
+        keyword_matrix = self.get_normalized_keyword_matrix()
         skills = [s.lower() for s in set(skills)]
 
         for skill in skills:
