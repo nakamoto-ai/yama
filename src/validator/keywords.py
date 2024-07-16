@@ -17,6 +17,7 @@ class JDKeywordMatrix:
         abnormal_keyword_matrix = get_keyword_matrix()
 
         for keyword, occurrences in abnormal_keyword_matrix.items():
+            print(f"Occurrences: {occurrences}")
             concurrent_keys = occurrences.keys()
             num_occurs = occurrences.values()
             normal_occurs = self.normalize_keyword_occurrences(num_occurs)
