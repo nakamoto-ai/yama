@@ -399,7 +399,7 @@ class Validator(Module):
             logger.info("NOT REMOVING ANY UID")
 
         uids = list(weighted_scores.keys())
-        intuids = [eval(i) for i in uids]
+        intuids = [int(i) for i in uids]
         weights = list(weighted_scores.values())
         intweights = [int(weight * 1000) for weight in weights]
 
