@@ -306,7 +306,7 @@ class Validator(Module):
 
         print("Resumes:")
         for uid, resume in zip(miners_dict.keys(), miner_answers):
-            print(f"{uid}: {resume}")
+            print(f"{uid}: {resume[str(uid)]}")
 
         return miner_answers
 
@@ -352,7 +352,7 @@ class Validator(Module):
             print_score = f"{uid} - {total_score}"
             print_scores.append(print_score)
         score_print = '\n'.join(print_scores)
-        print(f"Scores:\n {score_print}")
+        print(f"Scores:\n{score_print}")
 
         return miners
 

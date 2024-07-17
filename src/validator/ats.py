@@ -193,6 +193,7 @@ class ATS:
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         resume_data = self.resume_data
+        print(f"Resume Data: {resume_data}")
 
         min_education_score = 1
         min_experience_score = 1
