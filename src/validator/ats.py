@@ -200,17 +200,17 @@ class ATS:
         min_projects_score = 0.3
         min_certifications_score = 1
         min_semantics_score = 1
-        min_similarity_score = 1
         min_overall_score = 5.5
+        min_similarity_score = 1
 
         if self.resume_not_found():
-            education_score = min_education_score
-            experience_score = min_experience_score
-            skills_score = min_skills_score
-            projects_score = min_projects_score
-            certifications_score = min_certifications_score
-            semantics_score = min_semantics_score
-            similarity_score = min_similarity_score
+            education_score = 0
+            experience_score = 0
+            skills_score = 0
+            projects_score = 0
+            certifications_score = 0
+            semantics_score = 0
+            similarity_score = 1
         else:
             reformatted_job_description = self.reformat_job_description(job_description)
             job_description = reformatted_job_description

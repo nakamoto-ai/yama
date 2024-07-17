@@ -304,6 +304,10 @@ class Validator(Module):
             it = executor.map(get_miner_prediction, miners_dict.values())
             miner_answers = [*it]
 
+        print("Resumes:")
+        for uid, resume in zip(miners_dict.keys, miner_answers):
+            print(f"{uid}: {resume}")
+
         return miner_answers
 
     def _get_miner_prediction(self, job_description: str, miner: ScoredMinerModule) -> dict[str, Any]:
@@ -337,7 +341,7 @@ class Validator(Module):
             scoring_data: Dict containing various values extracted from the job description
         """
         miners_dict = miners.get_all_by_uid()
-
+        print_scores = []
         for uid, v in miners_dict.items():
             resume_data = resumes[uid]
             self.ats.store_resume(resume_data=resume_data)
@@ -345,6 +349,10 @@ class Validator(Module):
             total_score = ats_score['total_score']
             v.score = total_score
             miners.set(v)
+            print_score = f"{uid} - {total_score}"
+            print_scores.append(print_score)
+        score_print = '\n'.join(print_scores)
+        print(f"Scores:\n {score_print}")
 
         return miners
 
