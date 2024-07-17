@@ -183,17 +183,8 @@ class ATS:
         reformatted_job_description['skills'] += job_description['tfidf_keywords']
         return reformatted_job_description
 
-    def resume_not_found(self) -> bool:
-        if isinstance(self.resume_data, dict):
-            for key, val in self.resume_data.items():
-                if not key.isdigit() or val is not None:
-                    return False
-            return True
-        return False
-
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
-        resume_data = self.resume_data
-        print(f"Resume Data: {resume_data}")
+        resume_data = [r for r in self.resume_data.values()][0]
 
         min_education_score = 1
         min_experience_score = 1
@@ -204,7 +195,7 @@ class ATS:
         min_overall_score = 5.5
         min_similarity_score = 1
 
-        if self.resume_not_found():
+        if resume_data is None:
             education_score = 0
             experience_score = 0
             skills_score = 0
