@@ -305,7 +305,7 @@ class Validator(Module):
             miner_answers = [*it]
 
         print("Resumes:")
-        for uid, resume in zip(miners_dict.keys, miner_answers):
+        for uid, resume in zip(miners_dict.keys(), miner_answers):
             print(f"{uid}: {resume}")
 
         return miner_answers
