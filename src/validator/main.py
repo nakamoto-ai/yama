@@ -345,7 +345,7 @@ class Validator(Module):
             total_score = ats_score['total_score']
             v.score = total_score
             miners.set(v)
-            print_score = f"{uid} - {total_score}"
+            print_score = f"{uid} - {ats_score}"
             print_scores.append(print_score)
         score_print = '\n'.join(print_scores)
         print(f"Scores:\n{score_print}")
