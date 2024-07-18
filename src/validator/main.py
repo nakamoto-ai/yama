@@ -335,6 +335,7 @@ class Validator(Module):
         """
         miners_dict = miners.get_all_by_uid()
         print_scores = []
+        print(f"Score Resumes: {resumes}")
         for uid, v in miners_dict.items():
             resume_data = resumes[uid]
             self.ats.store_resume(resume_data=resume_data)
