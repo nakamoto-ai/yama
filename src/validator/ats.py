@@ -195,7 +195,7 @@ class ATS:
         min_overall_score = 5.5
         min_similarity_score = 1
 
-        if not resume_data:
+        if resume_data is None:
             education_score = 0
             experience_score = 0
             skills_score = 0
