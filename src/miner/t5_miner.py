@@ -3,7 +3,7 @@ Author: Miller
 """
 import torch
 from loguru import logger
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5ForConditionalGeneration, pipeline
 from miner.base_miner import BaseMiner
 
 
@@ -22,10 +22,31 @@ class T5Miner(BaseMiner):
             "nakamoto-yama/t5-resume-generation", 
             device_map=self.device
         )
+        self.summarizer = pipeline(
+            "summarization", 
+            model="Falconsai/text_summarization", 
+            device_map=self.device
+        )
+
+    def preprocess_prompt(self, prompt: str, chunk_size: int=500) -> str:
+        chunks = [prompt[i:i+chunk_size] for i in range(0, len([prompt]), chunk_size)]
+        processed_chunks = []
+
+        for chunk in chunks:
+            input_length = len(chunk.split())
+            max_length = min(256, max(50, input_length // 2))
+
+            summary = self.summarizer(chunk, max_length=max_length)[0]['summary_text']
+            processed_chunks.append(summary)
+
+        final_text = ' '.join(processed_chunks)
+        print(final_text)
+        return final_text
 
     def generate_response(self, prompt: str) -> str:
         try:
-            input_text = f"generate resume JSON for the following job: {prompt}"
+            preprocessed_prompt = self.preprocess_prompt(prompt)
+            input_text = f"generate resume JSON for the following job: {preprocessed_prompt}"
             input_ids = self.tokenizer(input_text, return_tensors="pt").input_ids.to(self.device)
             outputs = self.model.generate(input_ids, max_length=512, num_return_sequences=1)
             result = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
