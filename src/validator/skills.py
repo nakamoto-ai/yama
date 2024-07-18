@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Tuple
 
 
 class JDSkills:
-    def __init__(self, skills_df: pd.DataFrame, job_description: Dict[str, Any]):
+    def __init__(self, skills_df: pd.DataFrame, job_description: str):
         self.skills_df = skills_df
         self.job_description = job_description
         self.kw_matrix = JDKeywordMatrix()
@@ -36,7 +36,7 @@ class JDSkills:
         universal_skills_map = {}
         preferred_skills_map = {}
 
-        jd = job_description["Description"].lower()
+        jd = job_description.lower()
 
         for universal_skill in universal_skills:
             u_skill = universal_skill.lower()
