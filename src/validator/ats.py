@@ -184,7 +184,7 @@ class ATS:
         return reformatted_job_description
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
-        resume_data = self.resume_data
+        resume_data = [r for r in self.resume_data.values()][0]
 
         min_education_score = 1
         min_experience_score = 1
