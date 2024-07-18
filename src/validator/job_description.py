@@ -13,8 +13,8 @@ class JobDescriptionParser:
         self.vectorizer = None
         self.load_vectorizer()
         self.matcher = Matcher(self.nlp.vocab)
-        self._add_patterns()
         self.dt_mappings = get_degree_type_mappings()
+        self._add_patterns()
         self.data_normalize = DataNormalize()
 
     def _add_patterns(self):
@@ -46,17 +46,18 @@ class JobDescriptionParser:
         ner_keywords = {
             'skills': [ent.text for ent in doc.ents if ent.label_ in ['SKILL', 'LANGUAGE']],
             'experience': [ent.text for ent in doc.ents if ent.label_ in ['DATE', 'TIME']],
-            'education': [ent.text for ent in doc.ents if ent.label_ in ['WORK_OF_ART', 'TASK']],
+            'education': [self.data_normalize.get_normalized_degree_type(ent.text)
+                          for ent in doc.ents if ent.label_ in ['WORK_OF_ART', 'TASK']],
             'preferred_skills': [ent.text for ent in doc.ents if ent.label_ in ['FAC']]
         }
 
-        matches = self.matcher(doc)
-        education_levels = []
-        for match_id, start, end in matches:
-            span = doc[start:end]
-            education_levels.append(span.text)
-
-        ner_keywords['education'] = [self.data_normalize.get_normalized_degree_type(el) for el in education_levels]
+        # matches = self.matcher(doc)
+        # education_levels = []
+        # for match_id, start, end in matches:
+        #     span = doc[start:end]
+        #     education_levels.append(span.text)
+        #
+        # ner_keywords['education'] = [self.data_normalize.get_normalized_degree_type(el) for el in education_levels]
 
         return {
             'tfidf_keywords': tfidf_keywords,
