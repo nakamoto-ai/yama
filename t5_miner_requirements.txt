@@ -7,3 +7,4 @@ communex
 nltk
 sentencepiece
 accelerate
+datasets
