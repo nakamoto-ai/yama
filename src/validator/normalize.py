@@ -34,7 +34,9 @@ class DataNormalize:
     def get_normalized_degree_type(self, degree_type: str) -> str:
         degree_mappings = get_degree_type_mappings()
         best_match = self.find_best_match(degree_type, degree_mappings)
+        print(f"Best Degree Type Match: {best_match}")
         normalized_degree_type = degree_mappings[best_match]
+        print(f"Normalized Degree Type: {normalized_degree_type}")
         return normalized_degree_type
 
     def get_normalized_degree_major(self, degree_major: str) -> str:
