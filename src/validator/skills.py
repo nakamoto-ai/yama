@@ -27,8 +27,6 @@ class JDSkills:
             universal_skills += ner_skills
             ner_exp_keywords = row['keywords']['ner_keywords']['experience']
             universal_skills += ner_exp_keywords
-            ner_responsibility_keywords = row['keywords']['ner_keywords']['responsibilities']
-            universal_skills += ner_responsibility_keywords
             preferred_skills_keywords = row['keywords']['ner_keywords']['preferred_skills']
             preferred_skills += preferred_skills_keywords
 
