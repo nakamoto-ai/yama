@@ -334,10 +334,12 @@ class Validator(Module):
             scoring_data: Dict containing various values extracted from the job description
         """
         miners_dict = miners.get_all_by_uid()
+        uids = [u for u in miners_dict.keys()]
         print_scores = []
-        print(f"Score Resumes: {resumes}")
         for uid, v in miners_dict.items():
-            resume_data = resumes[uid]
+            resume_index = uids.index(uid)
+            uid = str(uid)
+            resume_data = resumes[resume_index]
             self.ats.store_resume(resume_data=resume_data)
             ats_score = self.ats.calculate_ats_score(scoring_data['jd'])
             total_score = ats_score['total_score']
