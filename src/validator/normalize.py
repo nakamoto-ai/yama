@@ -12,9 +12,11 @@ class DataNormalize:
 
     def find_best_match(self, title: str, mappings: Dict[str, str]) -> str:
         titles = list([k for k in mappings.keys()])
+        print(f"Titles: {titles}")
         title_vec = self.vectorizer.fit_transform([title] + titles)
         cosine_similarities = cosine_similarity(title_vec[0:1], title_vec[1:]).flatten()
         best_match_index = np.argmax(cosine_similarities)
+        print(f"Best match index: {best_match_index}")
         best_match = titles[best_match_index]
         return best_match
 
@@ -33,6 +35,7 @@ class DataNormalize:
 
     def get_normalized_degree_type(self, degree_type: str) -> str:
         degree_mappings = get_degree_type_mappings()
+        print(f"Degree Mappings: {degree_mappings}")
         best_match = self.find_best_match(degree_type, degree_mappings)
         print(f"Best Degree Type Match: {best_match}")
         normalized_degree_type = degree_mappings[best_match]
