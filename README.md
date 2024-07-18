@@ -154,9 +154,9 @@ pip install -e .
 
 5) Create and set environment variables in a .env file
 
-Create a `.env` file by copying the example environment file `.env.example` to your desired path:
+Create a `.env` file by copying the example environment file `.env.example`:
 ```bash
-cp .env.example <path-to-env-file>
+cp .env.example .env
 ```
 
 Then insert your key name values of each into the `.env` file.
@@ -221,9 +221,9 @@ pip install -e .
 
 5) Create and set environment variables in a .env file
 
-Create a `.env` file by copying the example environment file `.env.example` to your desired path:
+Create a `.env` file by copying the example environment file `.env.example`:
 ```bash
-cp .env.example <path-to-env-file>
+cp .env.example .env
 ```
 
 Then insert your key name values of each into the `.env` file.
