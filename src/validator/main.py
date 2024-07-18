@@ -428,7 +428,7 @@ class Validator(Module):
         resume_extractor = ResumeExtractor()
         new_miner_resumes = {}
         for uid, miner_resume in miner_resumes.items():
-            resume_extractor.resume_data = miner_resume
+            resume_extractor.add_resume_data(miner_resume)
             extracted_resume = resume_extractor.get_segments()
             new_miner_resumes[uid] = extracted_resume
         return new_miner_resumes

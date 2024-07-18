@@ -34,8 +34,8 @@ class ATS:
         preferred_skills_weights: Dict[str, Any],
         resume_data: Dict[str, Any] = sample_resume_data
     ):
-        self.resume_data = resume_data
-        self.resume_extractor = ResumeExtractor(resume_data=self.resume_data)
+        self.resume_data = [v for v in resume_data.values()][0]
+        self.resume_extractor = ResumeExtractor(resume_data=resume_data)
         self.skills_df = skills_df
         self.universal_skills_weights = universal_skills_weights
         self.preferred_skills_weights = preferred_skills_weights
@@ -184,7 +184,7 @@ class ATS:
         return reformatted_job_description
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
-        resume_data = [r for r in self.resume_data.values()][0]
+        resume_data = self.resume_data
 
         min_education_score = 1
         min_experience_score = 1
@@ -195,7 +195,7 @@ class ATS:
         min_overall_score = 5.5
         min_similarity_score = 1
 
-        if resume_data is None:
+        if not resume_data:
             education_score = 0
             experience_score = 0
             skills_score = 0
@@ -210,14 +210,13 @@ class ATS:
             print(f"Resume Data: {resume_data}")
 
             if 'education' in resume_data:
-                print(f"ATS JD Education: {job_description['education']}")
-                print(f"Resume Data Education: {resume_data['education']}")
                 education_score = self.score_education(job_description["education"], resume_data["education"])
             else:
                 education_score = min_education_score
 
             if 'work_experience' in resume_data:
-                experience_score = self.score_experience(job_description["min_years_experience"], resume_data["work_experience"])
+                experience_score = self.score_experience(job_description["min_years_experience"],
+                                                         resume_data["work_experience"])
             else:
                 experience_score = min_experience_score
 
@@ -232,12 +231,13 @@ class ATS:
                 projects_score = min_projects_score
 
             if 'certifications' in resume_data:
-                certifications_score = self.score_certifications(job_description["certifications"], resume_data["certifications"])
+                certifications_score = self.score_certifications(job_description["certifications"],
+                                                                 resume_data["certifications"])
             else:
                 certifications_score = min_certifications_score
 
             if 'work_experience' in resume_data and 'skills' in resume_data:
-                resume_text = ' '.join([work["roles"] for work in resume_data["work_experience"]])
+                resume_text = ' '.join([work["job_title"] for work in resume_data["work_experience"]])
                 semantics_score = self.score_semantics(resume_text)
                 similarity_score = self.score_similarity(resume_text, ' '.join(job_description["skills"]))
             else:
@@ -252,12 +252,12 @@ class ATS:
             total_score = 0
 
         if (education_score >= min_education_score and
-            experience_score >= min_experience_score and
-            skills_score >= min_skills_score and
-            projects_score >= min_projects_score and
-            certifications_score >= min_certifications_score and
-            semantics_score >= min_semantics_score and
-            similarity_score >= min_similarity_score and
+                experience_score >= min_experience_score and
+                skills_score >= min_skills_score and
+                projects_score >= min_projects_score and
+                certifications_score >= min_certifications_score and
+                semantics_score >= min_semantics_score and
+                similarity_score >= min_similarity_score and
                 total_score >= min_overall_score):
             result = "Yay, you're in!"
         else:
