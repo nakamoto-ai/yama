@@ -207,8 +207,11 @@ class ATS:
             reformatted_job_description = self.reformat_job_description(job_description)
             job_description = reformatted_job_description
             print(f"ATS Job Description: {job_description}")
+            print(f"Resume Data: {resume_data}")
 
             if 'education' in resume_data:
+                print(f"ATS JD Education: {job_description['education']}")
+                print(f"Resume Data Education: {resume_data['education']}")
                 education_score = self.score_education(job_description["education"], resume_data["education"])
             else:
                 education_score = min_education_score
