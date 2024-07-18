@@ -44,7 +44,7 @@ class JobDescriptionParser:
         # NER
         doc = self.nlp(job_description)
         ner_keywords = {
-            'skills': [ent.text for ent in doc.ents if ent.label_ in ['SKILL', 'LANGUAGE']],
+            'skills': [ent.text for ent in doc.ents if ent.label_ in ['SKILL', 'LANGUAGE', 'ORG']],
             'experience': [ent.text for ent in doc.ents if ent.label_ in ['DATE', 'TIME']],
             'education': [self.data_normalize.get_normalized_degree_type(ent.text)
                           for ent in doc.ents if ent.label_ in ['WORK_OF_ART', 'TASK']],
