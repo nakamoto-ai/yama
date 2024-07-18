@@ -1,13 +1,29 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 import spacy
+from spacy.matcher import Matcher
 from typing import Dict, Any, List
+from hugging_data import get_degree_type_mappings
 
 
 class JobDescriptionParser:
     def __init__(self):
         self.nlp = spacy.load('en_core_web_trf')
+        self.vectorizer = None
         self.load_vectorizer()
+        self.matcher = Matcher(self.nlp.vocab)
+        self._add_patterns()
+
+    def _add_patterns(self):
+        degree_types = [{"LOWER": dt.lower()} for dt in get_degree_type_mappings().keys()]
+        education_patterns = [
+            {"LOWER": "bachelor's"}, {"LOWER": "bachelor"},
+            {"LOWER": "master's"}, {"LOWER": "master"},
+            {"LOWER": "phd"}, {"LOWER": "doctorate"},
+            {"LOWER": "mba"}, {"LOWER": "degree"}
+        ]
+        education_patterns += degree_types
+        self.matcher.add("EDUCATION", [education_patterns])
 
     def load_vectorizer(self):
         self.vectorizer = TfidfVectorizer(stop_words='english', max_features=1000)
