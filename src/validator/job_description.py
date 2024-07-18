@@ -4,6 +4,7 @@ import spacy
 from spacy.matcher import Matcher
 from typing import Dict, Any, List
 from hugging_data import get_degree_type_mappings
+from normalize import DataNormalize
 
 
 class JobDescriptionParser:
@@ -13,9 +14,11 @@ class JobDescriptionParser:
         self.load_vectorizer()
         self.matcher = Matcher(self.nlp.vocab)
         self._add_patterns()
+        self.dt_mappings = get_degree_type_mappings()
+        self.data_normalize = DataNormalize()
 
     def _add_patterns(self):
-        degree_types = [{"LOWER": dt.lower()} for dt in get_degree_type_mappings().keys()]
+        degree_types = [{"LOWER": dt.lower()} for dt in self.dt_mappings.keys()]
         education_patterns = [
             {"LOWER": "bachelor's"}, {"LOWER": "bachelor"},
             {"LOWER": "master's"}, {"LOWER": "master"},
@@ -43,7 +46,7 @@ class JobDescriptionParser:
         ner_keywords = {
             'skills': [ent.text for ent in doc.ents if ent.label_ in ['SKILL', 'LANGUAGE']],
             'experience': [ent.text for ent in doc.ents if ent.label_ in ['DATE', 'TIME']],
-            'responsibilities': [ent.text for ent in doc.ents if ent.label_ in ['WORK_OF_ART', 'TASK']],
+            'education': [ent.text for ent in doc.ents if ent.label_ in ['WORK_OF_ART', 'TASK']],
             'preferred_skills': [ent.text for ent in doc.ents if ent.label_ in ['FAC']]
         }
 
@@ -53,7 +56,7 @@ class JobDescriptionParser:
             span = doc[start:end]
             education_levels.append(span.text)
 
-        ner_keywords['education'] = education_levels
+        ner_keywords['education'] = [self.data_normalize.get_normalized_degree_type(el) for el in education_levels]
 
         return {
             'tfidf_keywords': tfidf_keywords,
