@@ -67,13 +67,15 @@ sample_resume_data = {
 class ResumeExtractor:
     def __init__(self, resume_data: Dict[str, Any] | None = None):
         if resume_data is None:
-            resume_data = sample_resume_data
+            self.resume_data = sample_resume_data
+        else:
+            self.resume_data = None
+            self.add_resume_data(resume_data)
         self.vectorizer = TfidfVectorizer()
         self.dataset = get_certifications_dataset()
         self.certifications = [cert["Class"] for cert in self.dataset]
         self.universities = get_colleges()
         self.knn = self.load_knn_model()
-        self.resume_data = resume_data
         self.universal_skills = defaultdict(int)
         self.education_dict = defaultdict(lambda: {"exists": 0, "major": ""})
         self.work_experience_dict = defaultdict(float)
@@ -199,6 +201,9 @@ class ResumeExtractor:
         knn = NearestNeighbors(metric='cosine', algorithm='brute')
         knn.fit(X)
         return knn
+
+    def add_resume_data(self, resume_data: Dict[str, Any]):
+        self.resume_data = [v for v in resume_data.values()][0]
 
     def reset(self):
         self.universal_skills = defaultdict(int)

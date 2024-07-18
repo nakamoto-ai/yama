@@ -34,8 +34,8 @@ class ATS:
         preferred_skills_weights: Dict[str, Any],
         resume_data: Dict[str, Any] = sample_resume_data
     ):
-        self.resume_data = resume_data
-        self.resume_extractor = ResumeExtractor(resume_data=self.resume_data)
+        self.resume_data = [v for v in resume_data.values()][0]
+        self.resume_extractor = ResumeExtractor(resume_data=resume_data)
         self.skills_df = skills_df
         self.universal_skills_weights = universal_skills_weights
         self.preferred_skills_weights = preferred_skills_weights
@@ -184,7 +184,7 @@ class ATS:
         return reformatted_job_description
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
-        resume_data = self.resume_data  # Directly using self.resume_data
+        resume_data = self.resume_data
 
         min_education_score = 1
         min_experience_score = 1
