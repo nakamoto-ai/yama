@@ -23,7 +23,6 @@ class JobDescriptionParser:
             {"LOWER": "mba"}, {"LOWER": "degree"}
         ]
         education_patterns += degree_types
-        education_patterns = list(set(education_patterns))
         self.matcher.add("EDUCATION", [education_patterns])
 
     def load_vectorizer(self):
