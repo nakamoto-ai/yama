@@ -184,7 +184,10 @@ class ATS:
         return reformatted_job_description
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
-        resume_data = [r for r in self.resume_data.values()][0]
+        resume_data = None
+        resume_data_list = [r for r in self.resume_data.values()]
+        if len(resume_data_list) > 0:
+            resume_data = resume_data_list[0]
 
         min_education_score = 1
         min_experience_score = 1
@@ -195,7 +198,7 @@ class ATS:
         min_overall_score = 5.5
         min_similarity_score = 1
 
-        if resume_data is None:
+        if not resume_data or resume_data is None:
             education_score = 0
             experience_score = 0
             skills_score = 0
