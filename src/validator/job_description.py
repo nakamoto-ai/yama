@@ -15,14 +15,14 @@ class JobDescriptionParser:
         self._add_patterns()
 
     def _add_patterns(self):
-        degree_types = [{"LOWER": dt.lower()} for dt in get_degree_type_mappings().keys()]
+        # degree_types = [{"LOWER": dt.lower()} for dt in get_degree_type_mappings().keys()]
         education_patterns = [
             {"LOWER": "bachelor's"}, {"LOWER": "bachelor"},
             {"LOWER": "master's"}, {"LOWER": "master"},
             {"LOWER": "phd"}, {"LOWER": "doctorate"},
             {"LOWER": "mba"}, {"LOWER": "degree"}
         ]
-        education_patterns += degree_types
+        # education_patterns += degree_types
         self.matcher.add("EDUCATION", [education_patterns])
 
     def load_vectorizer(self):
