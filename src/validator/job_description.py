@@ -15,14 +15,15 @@ class JobDescriptionParser:
         self._add_patterns()
 
     def _add_patterns(self):
-        # degree_types = [{"LOWER": dt.lower()} for dt in get_degree_type_mappings().keys()]
+        degree_types = [{"LOWER": dt.lower()} for dt in get_degree_type_mappings().keys()]
         education_patterns = [
             {"LOWER": "bachelor's"}, {"LOWER": "bachelor"},
             {"LOWER": "master's"}, {"LOWER": "master"},
             {"LOWER": "phd"}, {"LOWER": "doctorate"},
             {"LOWER": "mba"}, {"LOWER": "degree"}
         ]
-        # education_patterns += degree_types
+        education_patterns += degree_types
+        education_patterns = list(set(education_patterns))
         self.matcher.add("EDUCATION", [education_patterns])
 
     def load_vectorizer(self):
@@ -41,12 +42,19 @@ class JobDescriptionParser:
         # NER
         doc = self.nlp(job_description)
         ner_keywords = {
-            'education': [ent.text for ent in doc.ents if ent.label_ in ['EDUCATION', 'ORG']],
             'skills': [ent.text for ent in doc.ents if ent.label_ in ['SKILL', 'LANGUAGE']],
             'experience': [ent.text for ent in doc.ents if ent.label_ in ['DATE', 'TIME']],
             'responsibilities': [ent.text for ent in doc.ents if ent.label_ in ['WORK_OF_ART', 'TASK']],
             'preferred_skills': [ent.text for ent in doc.ents if ent.label_ in ['FAC']]
         }
+
+        matches = self.matcher(doc)
+        education_levels = []
+        for match_id, start, end in matches:
+            span = doc[start:end]
+            education_levels.append(span.text)
+
+        ner_keywords['education'] = education_levels
 
         return {
             'tfidf_keywords': tfidf_keywords,
