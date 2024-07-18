@@ -27,7 +27,12 @@ def get_job_title_mappings() -> Dict[str, str]:
 
 def get_degree_type_mappings() -> Dict[str, str]:
     dataset = load_dataset("nakamoto-yama/dt-mappings", split="train").to_dict()
-    return dataset
+    degree_types = dataset['Degree Type']
+    mappings = dataset['Mapping']
+    new_dataset = {}
+    for k, v in zip(degree_types, mappings):
+        new_dataset[k] = v
+    return new_dataset
 
 
 def get_degree_majors() -> List[str]:

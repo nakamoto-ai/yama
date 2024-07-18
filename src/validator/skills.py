@@ -30,8 +30,6 @@ class JDSkills:
             preferred_skills_keywords = row['keywords']['ner_keywords']['preferred_skills']
             preferred_skills += preferred_skills_keywords
 
-        print("Universal Skills before set conversion:", universal_skills)
-
         universal_skills = list(set(universal_skills))
         preferred_skills = list(set(preferred_skills))
 
