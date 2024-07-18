@@ -40,7 +40,6 @@ class T5Miner(BaseMiner):
             processed_chunks.append(summary)
 
         final_text = ' '.join(processed_chunks)
-        print(final_text)
         return final_text
 
     def generate_response(self, prompt: str) -> str:
