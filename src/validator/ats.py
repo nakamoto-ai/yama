@@ -9,7 +9,8 @@ from resume_extract import ResumeExtractor, sample_resume_data
 import pandas as pd
 from typing import Dict, Any, List
 from torch import Tensor
-from hugging_data import get_degree_level_mappings
+from hugging_data import get_degree_level_mappings, get_degree_type_mappings
+from normalize import DataNormalize
 
 
 sample_job_description = {
@@ -32,11 +33,10 @@ class ATS:
         self,
         skills_df: pd.DataFrame,
         universal_skills_weights: Dict[str, Any],
-        preferred_skills_weights: Dict[str, Any],
-        resume_data: Dict[str, Any] = sample_resume_data
+        preferred_skills_weights: Dict[str, Any]
     ):
-        self.resume_data = [v for v in resume_data.values()][0]
-        self.resume_extractor = ResumeExtractor(resume_data=resume_data)
+        self.resume_data = None
+        self.resume_extractor = None
         self.skills_df = skills_df
         self.universal_skills_weights = universal_skills_weights
         self.preferred_skills_weights = preferred_skills_weights
@@ -51,11 +51,13 @@ class ATS:
         dl_mappings = get_degree_level_mappings()
         highest_score = 0
         education_levels = ["High School", "Associate", "Bachelor", "Master", "Doctorate"]
+        dn = DataNormalize()
         for job_edu in [dl_mappings[j] for j in job_education]:
             score = 0
             job_index = education_levels.index(job_edu)
             for edu in resume_education:
-                edu_index = education_levels.index(edu)
+                degree_type = dl_mappings[dn.get_normalized_degree_type(edu['degree'])]
+                edu_index = education_levels.index(degree_type)
                 if edu_index == job_index:
                     score += 1
                 elif edu_index == job_index + 1:
