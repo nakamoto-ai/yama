@@ -55,7 +55,7 @@ class ATS:
             score = 0
             job_index = education_levels.index(job_edu)
             for edu in resume_education:
-                edu_index = education_levels.index(edu["degree_type"])
+                edu_index = education_levels.index(edu)
                 if edu_index == job_index:
                     score += 1
                 elif edu_index == job_index + 1:
