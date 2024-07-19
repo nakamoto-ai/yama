@@ -9,6 +9,7 @@ from resume_extract import ResumeExtractor, sample_resume_data
 import pandas as pd
 from typing import Dict, Any, List
 from torch import Tensor
+from hugging_data import get_degree_level_mappings
 
 
 sample_job_description = {
@@ -46,19 +47,24 @@ class ATS:
         self.resume_data = resume_data
         self.resume_extractor = ResumeExtractor(resume_data=self.resume_data)
 
-    def score_education(self, job_education: str, resume_education: List[Dict[str, Any]]) -> float:
+    def score_education(self, job_education: List[str], resume_education: List[Dict[str, Any]]) -> float:
+        dl_mappings = get_degree_level_mappings()
+        highest_score = 0
         education_levels = ["High School", "Associate", "Bachelor", "Master", "Doctorate"]
-        job_index = education_levels.index(job_education)
-        score = 0
-        for edu in resume_education:
-            edu_index = education_levels.index(edu["degree_type"])
-            if edu_index == job_index:
-                score += 1
-            elif edu_index == job_index + 1:
-                score += 1.25
-            elif edu_index == job_index - 1 or edu_index == job_index + 2:
-                score += 0.25
-        return score
+        for job_edu in [dl_mappings[j] for j in job_education]:
+            score = 0
+            job_index = education_levels.index(job_edu)
+            for edu in resume_education:
+                edu_index = education_levels.index(edu["degree_type"])
+                if edu_index == job_index:
+                    score += 1
+                elif edu_index == job_index + 1:
+                    score += 1.25
+                elif edu_index == job_index - 1 or edu_index == job_index + 2:
+                    score += 0.25
+            if score > highest_score:
+                highest_score = score
+        return highest_score
 
     def score_experience(self, min_years_experience: int, resume_experience: List[Dict[str, Any]]) -> float:
         score = 0

@@ -48,3 +48,11 @@ def get_keyword_matrix() -> Dict[str, Dict[str, int]]:
 def get_colleges() -> List[Dict[str, Any]]:
     dataset = load_dataset("nakamoto-yama/us-colleges-universities", split="train").to_dict()
     return dataset
+
+
+def get_degree_level_mappings() -> Dict[str, str]:
+    dataset = load_dataset("nakamoto-yama/dl-mappings", split="train").to_dict()
+    new_dataset = {}
+    for dl_key, dl_val in dataset.items():
+        new_dataset[dl_key] = dl_val[0]
+    return new_dataset
