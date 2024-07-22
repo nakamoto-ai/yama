@@ -11,8 +11,9 @@ from typing import Dict, Any, List
 from torch import Tensor
 from hugging_data import get_degree_level_mappings, get_degree_type_mappings
 from normalize import DataNormalize
-from sklearn.metrics.pairwise import cosine_similarity
+import spacy
 import numpy as np
+from sklearn.neighbors import NearestNeighbors
 
 
 sample_job_description = {
@@ -44,6 +45,7 @@ class ATS:
         self.preferred_skills_weights = preferred_skills_weights
         self.model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
         self.vectorizer = TfidfVectorizer()
+        self.nlp = spacy.load("en_core_web_md")
 
     def store_resume(self, resume_data: Dict[str, Any]):
         self.resume_data = resume_data
@@ -116,56 +118,51 @@ class ATS:
         else:
             skill_score = 0
 
-        def get_skill_vector(skill, skills_df):
-            # Assuming skills_df has a column 'skill' and columns representing the skill vector
-            skill_row = skills_df[skills_df['skill'] == skill]
-            if not skill_row.empty:
-                return skill_row.drop(columns=['skill']).values[0]
-            else:
-                return None
-
-        additional_score = 0
-        knn_threshold = 0.8  # Set your threshold here
-
-        if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
-            # Calculate additional score based on weights
-            for skill, weight in universal_skills_weights.items():
-                print(f"Skill - {skill}, Weight - {weight}")
-                skill_vector = get_skill_vector(skill, skills_df)
-                if skill_vector is not None:
-                    # Calculate cosine similarity with all skills in resume_skill_counts
-                    resume_skills_vectors = [get_skill_vector(resume_skill, skills_df) for resume_skill in
-                                             resume_skill_counts.keys()]
-                    resume_skills_vectors = [vector for vector in resume_skills_vectors if vector is not None]
-                    if resume_skills_vectors:
-                        similarities = cosine_similarity([skill_vector], resume_skills_vectors)[0]
-                        max_similarity = np.max(similarities)
-                        if max_similarity >= knn_threshold:
-                            max_similar_skill_index = np.argmax(similarities)
-                            max_similar_skill = list(resume_skill_counts.keys())[max_similar_skill_index]
-                            additional_score += resume_skill_counts[max_similar_skill] * weight
-
-            for skill, weight in preferred_skills_weights.items():
-                print(f"Skill - {skill}, Weight - {weight}")
-                skill_vector = get_skill_vector(skill, skills_df)
-                if skill_vector is not None:
-                    # Calculate cosine similarity with all skills in resume_skill_counts
-                    resume_skills_vectors = [get_skill_vector(resume_skill, skills_df) for resume_skill in
-                                             resume_skill_counts.keys()]
-                    resume_skills_vectors = [vector for vector in resume_skills_vectors if vector is not None]
-                    if resume_skills_vectors:
-                        similarities = cosine_similarity([skill_vector], resume_skills_vectors)[0]
-                        max_similarity = np.max(similarities)
-                        if max_similarity >= knn_threshold:
-                            max_similar_skill_index = np.argmax(similarities)
-                            max_similar_skill = list(resume_skill_counts.keys())[max_similar_skill_index]
-                            additional_score += resume_skill_counts[max_similar_skill] * weight * 0.5
+        knn_model = self.load_knn_model(resume_skill_counts)
+        additional_score = self.calculate_skill_additional_score(universal_skills_weights, preferred_skills_weights, resume_skill_counts, knn_model, threshold=0.8)
 
         print(f"Additional Score: {additional_score}")
         total_skills_score = skill_score + additional_score
         print(f"Total Skills Score: {total_skills_score}")
 
         return total_skills_score
+
+    def load_knn_model(self, resume_skill_counts):
+        skills = list(resume_skill_counts.keys())
+        embeddings = np.array([self.nlp(skill).vector for skill in skills])
+        knn_model = NearestNeighbors(n_neighbors=1, metric='cosine').fit(embeddings)
+        return knn_model
+
+    def get_skill_knn_score(self, skill, resume_skill_counts, knn_model, threshold=0.8):
+        """
+        Get the highest KNN score between the given skill and the keys in resume_skill_counts.
+        """
+        max_score = 0
+        most_similar_skill = None
+        for existing_skill in resume_skill_counts.keys():
+            score = knn_model.similarity(skill, existing_skill)
+            if score > max_score:
+                max_score = score
+                most_similar_skill = existing_skill
+        return most_similar_skill, max_score
+
+    def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts, knn_model,
+                                   threshold=0.8):
+        additional_score = 0
+
+        for skill, weight in universal_skills_weights.items():
+            print(f"Skill - {skill}, Weight - {weight}")
+            most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, knn_model, threshold)
+            if score >= threshold:
+                additional_score += resume_skill_counts[most_similar_skill] * weight
+
+        for skill, weight in preferred_skills_weights.items():
+            print(f"Skill - {skill}, Weight - {weight}")
+            most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, knn_model, threshold)
+            if score >= threshold:
+                additional_score += resume_skill_counts[most_similar_skill] * weight * 0.5
+
+        return additional_score
 
     def score_projects(self, projects: List[Dict[str, Any]]) -> float:
         score = 0
