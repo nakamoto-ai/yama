@@ -136,7 +136,7 @@ class ATS:
     def get_skill_vector(self, skill):
         return self.nlp(skill).vector
 
-    def get_skill_knn_score(self, skill, resume_skill_counts, knn_model, threshold=0.8):
+    def get_skill_knn_score(self, skill, resume_skill_counts, threshold=0.9):
         skill_vector = self.get_skill_vector(skill).reshape(1, -1)
         existing_skill_vectors = np.array([self.get_skill_vector(ex_skill) for ex_skill in resume_skill_counts.keys()])
 
