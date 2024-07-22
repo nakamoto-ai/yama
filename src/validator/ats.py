@@ -198,20 +198,16 @@ class ATS:
             resume_data = resume_data_list[0]
 
         min_education_score = 1
-        min_experience_score = 1
         min_skills_score = 1
         min_projects_score = 0.3
-        min_certifications_score = 1
         min_semantics_score = 1
         min_overall_score = 5.5
         min_similarity_score = 1
 
         if not resume_data or resume_data is None:
             education_score = 0
-            experience_score = 0
             skills_score = 0
             projects_score = 0
-            certifications_score = 0
             semantics_score = 0
             similarity_score = 1
         else:
@@ -225,12 +221,6 @@ class ATS:
             else:
                 education_score = min_education_score
 
-            if 'work_experience' in resume_data:
-                experience_score = self.score_experience(job_description["min_years_experience"],
-                                                         resume_data["work_experience"])
-            else:
-                experience_score = min_experience_score
-
             if 'skills' in resume_data:
                 skills_score = self.score_skills(job_description["skills"], resume_data["skills"])
             else:
@@ -241,12 +231,6 @@ class ATS:
             else:
                 projects_score = min_projects_score
 
-            if 'certifications' in resume_data:
-                certifications_score = self.score_certifications(job_description["certifications"],
-                                                                 resume_data["certifications"])
-            else:
-                certifications_score = min_certifications_score
-
             if 'work_experience' in resume_data and 'skills' in resume_data:
                 resume_text = ' '.join([work["job_title"] for work in resume_data["work_experience"]])
                 semantics_score = self.score_semantics(resume_text)
@@ -255,18 +239,15 @@ class ATS:
                 semantics_score = min_semantics_score
                 similarity_score = min_similarity_score
 
-        total_score = (education_score + experience_score + skills_score + projects_score +
-                       certifications_score + semantics_score + similarity_score)
+        total_score = (education_score + skills_score + projects_score + semantics_score + similarity_score)
 
         # If similarity score is high, set total_score to 0
         if similarity_score == 1:
             total_score = 0
 
         if (education_score >= min_education_score and
-                experience_score >= min_experience_score and
                 skills_score >= min_skills_score and
                 projects_score >= min_projects_score and
-                certifications_score >= min_certifications_score and
                 semantics_score >= min_semantics_score and
                 similarity_score >= min_similarity_score and
                 total_score >= min_overall_score):
@@ -277,10 +258,8 @@ class ATS:
         return {
             "total_score": total_score,
             "education_score": education_score,
-            "experience_score": experience_score,
             "skills_score": skills_score,
             "projects_score": projects_score,
-            "certifications_score": certifications_score,
             "semantics_score": semantics_score,
             "similarity_score": similarity_score,
             "result": result
