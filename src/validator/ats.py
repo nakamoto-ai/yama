@@ -232,12 +232,14 @@ class ATS:
 
     @staticmethod
     def normalize(values):
-        min_val = min(values)
-        max_val = max(values)
-        range_val = max_val - min_val
+        if values != []:
+            min_val = min(values)
+            max_val = max(values)
+            range_val = max_val - min_val
 
-        normalized_values = [(x - min_val) / range_val for x in values]
-        return normalized_values
+            normalized_values = [(x - min_val) / range_val for x in values]
+            return normalized_values
+        return values
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         resume_data = None
