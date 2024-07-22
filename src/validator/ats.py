@@ -11,6 +11,8 @@ from typing import Dict, Any, List
 from torch import Tensor
 from hugging_data import get_degree_level_mappings, get_degree_type_mappings
 from normalize import DataNormalize
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 
 sample_job_description = {
@@ -114,18 +116,50 @@ class ATS:
         else:
             skill_score = 0
 
+        def get_skill_vector(skill, skills_df):
+            # Assuming skills_df has a column 'skill' and columns representing the skill vector
+            skill_row = skills_df[skills_df['skill'] == skill]
+            if not skill_row.empty:
+                return skill_row.drop(columns=['skill']).values[0]
+            else:
+                return None
+
         additional_score = 0
+        knn_threshold = 0.8  # Set your threshold here
+
         if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
             # Calculate additional score based on weights
             for skill, weight in universal_skills_weights.items():
                 print(f"Skill - {skill}, Weight - {weight}")
-                if skill in resume_skill_counts:
-                    additional_score += resume_skill_counts[skill] * weight
+                skill_vector = get_skill_vector(skill, skills_df)
+                if skill_vector is not None:
+                    # Calculate cosine similarity with all skills in resume_skill_counts
+                    resume_skills_vectors = [get_skill_vector(resume_skill, skills_df) for resume_skill in
+                                             resume_skill_counts.keys()]
+                    resume_skills_vectors = [vector for vector in resume_skills_vectors if vector is not None]
+                    if resume_skills_vectors:
+                        similarities = cosine_similarity([skill_vector], resume_skills_vectors)[0]
+                        max_similarity = np.max(similarities)
+                        if max_similarity >= knn_threshold:
+                            max_similar_skill_index = np.argmax(similarities)
+                            max_similar_skill = list(resume_skill_counts.keys())[max_similar_skill_index]
+                            additional_score += resume_skill_counts[max_similar_skill] * weight
 
             for skill, weight in preferred_skills_weights.items():
                 print(f"Skill - {skill}, Weight - {weight}")
-                if skill in resume_skill_counts:
-                    additional_score += resume_skill_counts[skill] * weight * 0.5
+                skill_vector = get_skill_vector(skill, skills_df)
+                if skill_vector is not None:
+                    # Calculate cosine similarity with all skills in resume_skill_counts
+                    resume_skills_vectors = [get_skill_vector(resume_skill, skills_df) for resume_skill in
+                                             resume_skill_counts.keys()]
+                    resume_skills_vectors = [vector for vector in resume_skills_vectors if vector is not None]
+                    if resume_skills_vectors:
+                        similarities = cosine_similarity([skill_vector], resume_skills_vectors)[0]
+                        max_similarity = np.max(similarities)
+                        if max_similarity >= knn_threshold:
+                            max_similar_skill_index = np.argmax(similarities)
+                            max_similar_skill = list(resume_skill_counts.keys())[max_similar_skill_index]
+                            additional_score += resume_skill_counts[max_similar_skill] * weight * 0.5
 
         print(f"Additional Score: {additional_score}")
         total_skills_score = skill_score + additional_score
