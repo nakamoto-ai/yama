@@ -153,13 +153,11 @@ class ATS:
         additional_score = 0
 
         for skill, weight in universal_skills_weights.items():
-            print(f"Skill - {skill}, Weight - {weight}")
             most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, threshold)
             if score >= threshold:
                 additional_score += resume_skill_counts[most_similar_skill] * weight
 
         for skill, weight in preferred_skills_weights.items():
-            print(f"Skill - {skill}, Weight - {weight}")
             most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, threshold)
             if score >= threshold:
                 additional_score += resume_skill_counts[most_similar_skill] * weight * 0.5
