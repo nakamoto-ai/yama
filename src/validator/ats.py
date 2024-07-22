@@ -112,10 +112,7 @@ class ATS:
         if max_jd_score > 0:
             score_percentage = resume_score / max_jd_score
             print(f"Score Percentage: {score_percentage}")
-            if score_percentage >= 0.5:
-                skill_score = resume_score
-            else:
-                skill_score = 0
+            skill_score = score_percentage * resume_score
         else:
             skill_score = 0
 
@@ -123,12 +120,14 @@ class ATS:
         if skills_df is not None and universal_skills_weights is not None and preferred_skills_weights is not None:
             # Calculate additional score based on weights
             for skill, weight in universal_skills_weights.items():
+                print(f"Skill - {skill}, Weight - {weight}")
                 if skill in resume_skill_counts:
                     additional_score += resume_skill_counts[skill] * weight
 
             for skill, weight in preferred_skills_weights.items():
+                print(f"Skill - {skill}, Weight - {weight}")
                 if skill in resume_skill_counts:
-                    additional_score += resume_skill_counts[skill] * weight * 0.5  # Less weight compared to universal skills
+                    additional_score += resume_skill_counts[skill] * weight * 0.5
 
         print(f"Additional Score: {additional_score}")
         total_skills_score = skill_score + additional_score
@@ -174,7 +173,7 @@ class ATS:
         semantic_score = self.check_semantic_sense(resume_text)
         print(f"Semantic Score: {semantic_score}")
         if semantic_score < 0.5:
-            return 0
+            return semantic_score
         elif 0.5 <= semantic_score < 0.75:
             return 1
         else:
