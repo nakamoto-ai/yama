@@ -97,12 +97,12 @@ class ATS:
         universal_skills_weights = self.universal_skills_weights
         preferred_skills_weights = self.preferred_skills_weights
         universal_skills = defaultdict(int)
-        self.resume_extractor.process_skills(jd_skills, universal_skills)
+        universal_skills = self.resume_extractor.process_skills(jd_skills, universal_skills)
 
         max_jd_score = sum(universal_skills.values())
 
         resume_skill_counts = defaultdict(int)
-        self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
+        resume_skill_counts = self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
         resume_score = sum(resume_skill_counts.values())
 
         if max_jd_score > 0:

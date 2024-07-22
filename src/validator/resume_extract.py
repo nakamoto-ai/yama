@@ -91,10 +91,14 @@ class ResumeExtractor:
                 return 1
         return 0
 
-    def process_skills(self, skills: List[str]) -> Dict[str, int]:
+    def process_skills(self, skills: List[str], universal_skills: Dict[str, Any]) -> Dict[str, int]:
         for skill in skills:
             self.universal_skills[skill] += 1
-        return self.universal_skills
+            if skill in universal_skills:
+                universal_skills[skill] += 1
+            else:
+                universal_skills[skill] = 1
+        return universal_skills
 
     def find_nearest_certifications(
         self,
