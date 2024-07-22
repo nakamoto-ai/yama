@@ -99,7 +99,6 @@ class ATS:
         return score
 
     def score_skills(self, jd_skills: List[str], resume_skills: List[str]) -> float:
-        skills_df = self.skills_df
         universal_skills_weights = self.universal_skills_weights
         preferred_skills_weights = self.preferred_skills_weights
         universal_skills = defaultdict(int)
@@ -119,7 +118,8 @@ class ATS:
             skill_score = 0
 
         knn_model = self.load_knn_model(resume_skill_counts)
-        additional_score = self.calculate_skill_additional_score(universal_skills_weights, preferred_skills_weights, resume_skill_counts, knn_model, threshold=0.8)
+        additional_score = self.calculate_skill_additional_score(universal_skills_weights, preferred_skills_weights,
+                                                                 resume_skill_counts, knn_model, threshold=0.8)
 
         print(f"Additional Score: {additional_score}")
         total_skills_score = skill_score + additional_score
@@ -133,21 +133,27 @@ class ATS:
         knn_model = NearestNeighbors(n_neighbors=1, metric='cosine').fit(embeddings)
         return knn_model
 
-    def get_skill_knn_score(self, skill, resume_skill_counts, knn_model, threshold=0.8):
-        """
-        Get the highest KNN score between the given skill and the keys in resume_skill_counts.
-        """
-        max_score = 0
-        most_similar_skill = None
-        for existing_skill in resume_skill_counts.keys():
-            score = knn_model.similarity(skill, existing_skill)
-            if score > max_score:
-                max_score = score
-                most_similar_skill = existing_skill
-        return most_similar_skill, max_score
+    def get_skill_vector(self, skill):
+        return self.nlp(skill).vector
 
-    def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts, knn_model,
-                                   threshold=0.8):
+    def get_skill_knn_score(self, skill, resume_skill_counts, knn_model, threshold=0.8):
+        skill_vector = self.get_skill_vector(skill).reshape(1, -1)
+        existing_skill_vectors = np.array([self.get_skill_vector(ex_skill) for ex_skill in resume_skill_counts.keys()])
+
+        if not existing_skill_vectors.any():
+            return None, 0.0
+
+        similarities = cosine_similarity(skill_vector, existing_skill_vectors)
+        max_similarity = similarities.max()
+
+        if max_similarity >= threshold:
+            most_similar_skill = list(resume_skill_counts.keys())[similarities.argmax()]
+            return most_similar_skill, max_similarity
+        else:
+            return None, 0.0
+
+    def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts,
+                                         knn_model, threshold=0.8):
         additional_score = 0
 
         for skill, weight in universal_skills_weights.items():
