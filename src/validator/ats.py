@@ -117,7 +117,6 @@ class ATS:
         else:
             skill_score = 0
 
-        knn_model = self.load_knn_model(resume_skill_counts)
         additional_score = self.calculate_skill_additional_score(universal_skills_weights, preferred_skills_weights,
                                                                  resume_skill_counts)
 
@@ -126,12 +125,6 @@ class ATS:
         print(f"Total Skills Score: {total_skills_score}")
 
         return total_skills_score
-
-    def load_knn_model(self, resume_skill_counts):
-        skills = list(resume_skill_counts.keys())
-        embeddings = np.array([self.nlp(skill).vector for skill in skills])
-        knn_model = NearestNeighbors(n_neighbors=1, metric='cosine').fit(embeddings)
-        return knn_model
 
     def get_skill_vector(self, skill):
         return self.nlp(skill).vector
@@ -153,6 +146,10 @@ class ATS:
             return None, 0.0
 
     def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts, threshold=0.9):
+        u_skill_weight_vals = self.normalize(universal_skills_weights.values())
+        universal_skills_weights = {k: v for k, v in zip(universal_skills_weights.keys(), u_skill_weight_vals)}
+        p_skill_weight_vals = self.normalize(preferred_skills_weights.values())
+        preferred_skills_weights = {k: v for k, v in zip(preferred_skills_weights.keys(), p_skill_weight_vals)}
         additional_score = 0
 
         for skill, weight in universal_skills_weights.items():
@@ -232,6 +229,15 @@ class ATS:
             reformatted_job_description[k] = v
         reformatted_job_description['skills'] += job_description['tfidf_keywords']
         return reformatted_job_description
+
+    @staticmethod
+    def normalize(values):
+        min_val = min(values)
+        max_val = max(values)
+        range_val = max_val - min_val
+
+        normalized_values = [(x - min_val) / range_val for x in values]
+        return normalized_values
 
     def calculate_ats_score(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
         resume_data = None
