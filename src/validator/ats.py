@@ -232,7 +232,7 @@ class ATS:
                 projects_score = min_projects_score
 
             if 'work_experience' in resume_data and 'skills' in resume_data:
-                resume_text = ' '.join([work["job_title"] for work in resume_data["work_experience"]])
+                resume_text = ' '.join([work["title"] for work in resume_data["work_experience"]])
                 semantics_score = self.score_semantics(resume_text)
                 similarity_score = self.score_similarity(resume_text, ' '.join(job_description["skills"]))
             else:
