@@ -102,16 +102,14 @@ class ATS:
         universal_skills = self.resume_extractor.process_skills(jd_skills, universal_skills)
 
         max_jd_score = sum(universal_skills.values())
-        print(f"Max JD Score: {max_jd_score}")
 
         resume_skill_counts = defaultdict(int)
         resume_skill_counts = self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
+        print(f"Resume Skill Counts: {resume_skill_counts}")
         resume_score = sum(resume_skill_counts.values())
-        print(f"Resume Score: {resume_score}")
 
         if max_jd_score > 0:
             score_percentage = resume_score / max_jd_score
-            print(f"Score Percentage: {score_percentage}")
             skill_score = score_percentage * resume_score
         else:
             skill_score = 0
@@ -171,7 +169,6 @@ class ATS:
 
     def score_semantics(self, resume_text: str) -> int:
         semantic_score = self.check_semantic_sense(resume_text)
-        print(f"Semantic Score: {semantic_score}")
         if semantic_score < 0.5:
             return semantic_score
         elif 0.5 <= semantic_score < 0.75:
@@ -222,8 +219,6 @@ class ATS:
         else:
             reformatted_job_description = self.reformat_job_description(job_description)
             job_description = reformatted_job_description
-            print(f"ATS Job Description: {job_description}")
-            print(f"Resume Data: {resume_data}")
 
             if 'education' in resume_data:
                 education_score = self.score_education(job_description["education"], resume_data["education"])
