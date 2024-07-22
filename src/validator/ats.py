@@ -49,7 +49,8 @@ class ATS:
 
     def score_education(self, job_education: List[str], resume_education: List[Dict[str, Any]]) -> float:
         dl_mappings = get_degree_level_mappings()
-        highest_score = 0
+        highest_job_index = 0
+        relevant_score = 0
         education_levels = ["High School", "Associate", "Bachelor", "Master", "Doctorate"]
         dn = DataNormalize()
         for job_edu in [dl_mappings[j] for j in job_education]:
@@ -64,9 +65,10 @@ class ATS:
                     score += 1.25
                 elif edu_index == job_index - 1 or edu_index == job_index + 2:
                     score += 0.25
-            if score > highest_score:
-                highest_score = score
-        return highest_score
+            if job_index > highest_job_index:
+                relevant_score = score
+                highest_job_index = job_index
+        return relevant_score
 
     def score_experience(self, min_years_experience: int, resume_experience: List[Dict[str, Any]]) -> float:
         score = 0
@@ -100,13 +102,16 @@ class ATS:
         universal_skills = self.resume_extractor.process_skills(jd_skills, universal_skills)
 
         max_jd_score = sum(universal_skills.values())
+        print(f"Max JD Score: {max_jd_score}")
 
         resume_skill_counts = defaultdict(int)
         resume_skill_counts = self.resume_extractor.process_skills(resume_skills, resume_skill_counts)
         resume_score = sum(resume_skill_counts.values())
+        print(f"Resume Score: {resume_score}")
 
         if max_jd_score > 0:
             score_percentage = resume_score / max_jd_score
+            print(f"Score Percentage: {score_percentage}")
             if score_percentage >= 0.5:
                 skill_score = resume_score
             else:
@@ -125,7 +130,11 @@ class ATS:
                 if skill in resume_skill_counts:
                     additional_score += resume_skill_counts[skill] * weight * 0.5  # Less weight compared to universal skills
 
-        return skill_score + additional_score
+        print(f"Additional Score: {additional_score}")
+        total_skills_score = skill_score + additional_score
+        print(f"Total Skills Score: {total_skills_score}")
+
+        return total_skills_score
 
     def score_projects(self, projects: List[Dict[str, Any]]) -> float:
         score = 0
@@ -163,6 +172,7 @@ class ATS:
 
     def score_semantics(self, resume_text: str) -> int:
         semantic_score = self.check_semantic_sense(resume_text)
+        print(f"Semantic Score: {semantic_score}")
         if semantic_score < 0.5:
             return 0
         elif 0.5 <= semantic_score < 0.75:
