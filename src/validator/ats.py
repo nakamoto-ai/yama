@@ -119,7 +119,7 @@ class ATS:
 
         knn_model = self.load_knn_model(resume_skill_counts)
         additional_score = self.calculate_skill_additional_score(universal_skills_weights, preferred_skills_weights,
-                                                                 resume_skill_counts, knn_model, threshold=0.8)
+                                                                 resume_skill_counts, knn_model)
 
         print(f"Additional Score: {additional_score}")
         total_skills_score = skill_score + additional_score
