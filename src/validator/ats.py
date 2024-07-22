@@ -152,19 +152,18 @@ class ATS:
         else:
             return None, 0.0
 
-    def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts,
-                                         knn_model, threshold=0.8):
+    def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts, threshold=0.9):
         additional_score = 0
 
         for skill, weight in universal_skills_weights.items():
             print(f"Skill - {skill}, Weight - {weight}")
-            most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, knn_model, threshold)
+            most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, threshold)
             if score >= threshold:
                 additional_score += resume_skill_counts[most_similar_skill] * weight
 
         for skill, weight in preferred_skills_weights.items():
             print(f"Skill - {skill}, Weight - {weight}")
-            most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, knn_model, threshold)
+            most_similar_skill, score = self.get_skill_knn_score(skill, resume_skill_counts, threshold)
             if score >= threshold:
                 additional_score += resume_skill_counts[most_similar_skill] * weight * 0.5
 
