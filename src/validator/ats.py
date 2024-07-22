@@ -146,9 +146,9 @@ class ATS:
             return None, 0.0
 
     def calculate_skill_additional_score(self, universal_skills_weights, preferred_skills_weights, resume_skill_counts, threshold=0.9):
-        u_skill_weight_vals = self.normalize(universal_skills_weights.values())
+        u_skill_weight_vals = self.normalize([u for u in universal_skills_weights.values()])
         universal_skills_weights = {k: v for k, v in zip(universal_skills_weights.keys(), u_skill_weight_vals)}
-        p_skill_weight_vals = self.normalize(preferred_skills_weights.values())
+        p_skill_weight_vals = self.normalize([p for p in preferred_skills_weights.values()])
         preferred_skills_weights = {k: v for k, v in zip(preferred_skills_weights.keys(), p_skill_weight_vals)}
         additional_score = 0
 
