@@ -447,6 +447,8 @@ class Validator(Module):
             'universal': universal_skills_weights,
             'preferred': preferred_skills_weights
         }
+        for k, v in scoring_data.items():
+            print(f'{k}: {v}')
         return scoring_data
 
     async def get_job_description(self) -> Dict[str, Any]:
