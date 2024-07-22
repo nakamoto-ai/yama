@@ -119,7 +119,7 @@ class ATS:
 
         knn_model = self.load_knn_model(resume_skill_counts)
         additional_score = self.calculate_skill_additional_score(universal_skills_weights, preferred_skills_weights,
-                                                                 resume_skill_counts, knn_model)
+                                                                 resume_skill_counts)
 
         print(f"Additional Score: {additional_score}")
         total_skills_score = skill_score + additional_score
@@ -145,8 +145,6 @@ class ATS:
 
         similarities = cosine_similarity(skill_vector, existing_skill_vectors)
         max_similarity = float(str(similarities.max()))
-        print(f"Max Similarity: {max_similarity}")
-        print(f"Max Similarity Type: {type(max_similarity)}")
 
         if max_similarity >= threshold:
             most_similar_skill = list(resume_skill_counts.keys())[similarities.argmax()]
