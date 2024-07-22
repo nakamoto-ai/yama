@@ -144,7 +144,9 @@ class ATS:
             return None, 0.0
 
         similarities = cosine_similarity(skill_vector, existing_skill_vectors)
-        max_similarity = float(similarities.max())
+        max_similarity = similarities.max()
+        print(f"Max Similarity: {max_similarity}")
+        print(f"Max Similarity Type: {type(max_similarity)}")
 
         if max_similarity >= threshold:
             most_similar_skill = list(resume_skill_counts.keys())[similarities.argmax()]
