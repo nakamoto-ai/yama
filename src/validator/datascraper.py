@@ -5,10 +5,23 @@ import sqlite3
 import json
 from html import unescape
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
+
+# Thread-local storage for database connections
+thread_local_data = threading.local()
 
 
-def find_jobs(url: str, con: sqlite3.connect, cur: sqlite3.connect().cursor):
+def get_db_connection():
+    if not hasattr(thread_local_data, "connection"):
+        thread_local_data.connection = sqlite3.connect("jobs.db")
+    return thread_local_data.connection
+
+
+def find_jobs(url: str):
     try:
+        con = get_db_connection()
+        cur = con.cursor()
         response = requests.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -45,7 +58,16 @@ if __name__ == "__main__":
     with sqlite3.connect("jobs.db") as con:
         cur = con.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS jobs(job TEXT, description TEXT)")
-        for i in range(31, 1034):
-            url = f"https://www.builtin.com/jobs?page={i}"
-            find_jobs(url, con, cur)
-        print("Successfully created database of jobs")
+
+    urls = [f"https://www.builtin.com/jobs?page={i}" for i in range(31, 1034)]
+
+    with ThreadPoolExecutor(max_workers=25) as executor:
+        futures = [executor.submit(find_jobs, url) for url in urls]
+
+        for future in as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"Error occurred: {e}")
+
+    print("Successfully created database of jobs")
