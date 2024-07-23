@@ -70,7 +70,7 @@ When running the validator make sure to pass `--ignore-env-file` so that it acce
 
 Install python requirements:
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r validator_requirements.txt
 ```
 
 Install the `en_core_web_trf` model:
