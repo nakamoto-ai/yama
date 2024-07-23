@@ -11,3 +11,5 @@ communex
 substrateinterface
 dotenv
 fuzzywuzzy
+en_core_web_trf
+en_core_web_md

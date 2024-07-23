@@ -78,6 +78,11 @@ Install the `en_core_web_trf` model:
 python -m spacy download en_core_web_trf
 ```
 
+Install the `en_core_web_md` model:
+```bash
+python -m spacy download en_core_web_md
+```
+
 Install the project in editable mode:
 ```bash
 python -m pip install -e .
@@ -87,7 +92,7 @@ python -m pip install -e .
 
 The validator accepts two different command line arguments relating to the environment.
 
-#### CLI Arguements
+#### CLI Arguments
 
 | argument            | description                                            | required |
 |---------------------|--------------------------------------------------------|----------|
