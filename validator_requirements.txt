@@ -8,8 +8,6 @@ datasets
 spacy
 loguru
 communex
-substrateinterface
-dotenv
+substrate-interface
+python-dotenv
 fuzzywuzzy
-en_core_web_trf
-en_core_web_md
