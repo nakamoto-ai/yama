@@ -95,5 +95,5 @@ class T5Miner(BaseMiner):
                 projects=data.get("projects", [])
             )
         except json.JSONDecodeError:
-            logger.error("Failed to parse JSON from model output")
+            logger.error(f"Failed to parse JSON from model output: \n {json_str}")
             return Resume()
