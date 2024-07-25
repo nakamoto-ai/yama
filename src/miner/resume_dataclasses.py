@@ -27,10 +27,10 @@ class Resume:
     projects: List[str] = field(default_factory=list)
 
     def to_json(self) -> str:
-        def custom_asdict(obj):
-            if isinstance(obj, (JobExperience, Education)):
-                return {k: v for k, v in asdict(obj).items() if v is not None}
-            return obj
+        class ResumeEncoder(json.JSONEncoder):
+            def default(self, obj):
+                if isinstance(obj, (JobExperience, Education)):
+                    return {k: v for k, v in asdict(obj).items() if v is not None}
+                return super().default(obj)
 
-        resume_dict = asdict(self, dict_factory=custom_asdict)
-        return json.dumps(resume_dict, indent=2)
+        return json.dumps(asdict(self), cls=ResumeEncoder, indent=2)
