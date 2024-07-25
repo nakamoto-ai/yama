@@ -4,7 +4,6 @@ Author: Miller
 import time
 from abc import abstractmethod
 from typing import Dict, Any
-from dataclasses import asdict
 from loguru import logger
 from communex.module import Module, endpoint
 from miner.resume_dataclasses import Resume
@@ -29,7 +28,8 @@ class BaseMiner(Module):
 
         generate_response(self, prompt: str): Abstract method designed to be implemented
         by subclasses to generate a response based on the provided prompt. The 
-        implementation should return a response relevant to the prompt.
+        implementation should return a response relevant to the prompt. The implementation
+        should return a Resume object.
 
     Note:
         As an abstract class, BaseMiner cannot be instantiated directly and must be 
@@ -42,14 +42,14 @@ class BaseMiner(Module):
         logger.info(f"Job Description: {prompt}")
         resume = self.generate_response(prompt)
 
-        resume_dict = asdict(resume)
+        resume_json = (resume.to_json())
 
-        logger.info(f"Generated Resume: {resume_dict}")
+        logger.info(f"Generated Resume: {resume_json}")
         end_time = time.time()
         execution_time = end_time - start_time
         logger.info(f"Responded in {execution_time} seconds")
-        return resume
+        return { "answer": resume_json }
 
     @abstractmethod
-    def generate_response(self, prompt: str):
+    def generate_response(self, prompt: str) -> Resume:
         pass
