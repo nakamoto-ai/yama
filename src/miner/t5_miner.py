@@ -1,8 +1,8 @@
 """
 Author: Miller
 """
-import torch
 import json
+import torch
 from loguru import logger
 from transformers import T5Tokenizer, T5ForConditionalGeneration, pipeline
 from miner.base_miner import BaseMiner
