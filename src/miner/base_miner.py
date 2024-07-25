@@ -4,9 +4,10 @@ Author: Miller
 import time
 from abc import abstractmethod
 from typing import Dict, Any
+from dataclasses import asdict
 from loguru import logger
 from communex.module import Module, endpoint
-
+from miner.resume_dataclasses import Resume
 
 class BaseMiner(Module):
     """
@@ -38,18 +39,16 @@ class BaseMiner(Module):
     def generate(self, prompt: str) -> Dict[str, Any]:
         start_time = time.time()
         logger.info("Generating resume... ")
-
         logger.info(f"Job Description: {prompt}")
-
         resume = self.generate_response(prompt)
 
-        logger.info(f"Generated Resume: {resume}")
+        resume_dict = asdict(resume)
 
+        logger.info(f"Generated Resume: {resume_dict}")
         end_time = time.time()
         execution_time = end_time - start_time
         logger.info(f"Responded in {execution_time} seconds")
-
-        return {"answer": resume}
+        return resume
 
     @abstractmethod
     def generate_response(self, prompt: str):
