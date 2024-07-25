@@ -38,6 +38,12 @@ For Recruiters: Yama serves as a comprehensive solution for managing and assessi
 
 ## Validator
 
+To get started, clone the repository.
+
+```bash
+git clone https://github.com/nakamoto-ai/yama.git
+```
+
 ### Environment Variables
 | environment variable | description                                                 | required |
 |----------------------|-------------------------------------------------------------|----------|
