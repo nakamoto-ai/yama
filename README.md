@@ -38,6 +38,15 @@ For Recruiters: Yama serves as a comprehensive solution for managing and assessi
 
 ## Validator
 
+### Hardware Requirements
+```yaml
+CPU: 8 cores
+GPU: False
+RAM: 16GB
+Storage: 30GB
+```
+
+### Cloning
 To get started, clone the repository.
 
 ```bash
