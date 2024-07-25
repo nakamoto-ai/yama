@@ -15,7 +15,7 @@ from typing import Any, Dict, List, Tuple
 
 from communex.module.module import Module
 from communex.module.client import ModuleClient
-from communex.client import CommuneClient
+from communex.client import CommuneClient, Keypair
 from communex.compat.key import classic_load_key
 from communex._common import get_node_url
 
@@ -341,7 +341,7 @@ class Validator(Module):
             uid = str(uid)
             resume_data = resumes[resume_index]
             self.ats.store_resume(resume_data=resume_data)
-            ats_score = self.ats.calculate_ats_score(scoring_data['jd'])
+            ats_score = self.ats.calculate_ats_score(scoring_data['jd'], uid)
             total_score = ats_score['total_score']
             v.score = total_score
             miners.set(v)
