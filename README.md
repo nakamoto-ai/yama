@@ -52,7 +52,7 @@ git clone https://github.com/nakamoto-ai/yama.git
 | `NETUID`             | The netuid of the subnet                                    | ✅       |
 | `VALIDATOR_INTERVAL` | The time between validator steps (default: `10`)            | ❌       |
 
-These environment variables can be set in two ways: using a `.env` file and setting environment variables directly.
+These environment variables can be set in two ways: using a `.env` file or setting environment variables directly.
 
 #### .env file
 Create a `.env` file by copying the example environment file `.env.example` to your desired path:
