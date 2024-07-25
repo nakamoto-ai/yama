@@ -8,12 +8,36 @@ from datetime import datetime, timedelta
 from collections import Counter
 from math import log
 from typing import Any, Dict, List, Tuple
+from dataclasses import dataclass, field
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from datasets import load_dataset
 from miner.base_miner import BaseMiner
 
+@dataclass
+class JobExperience:
+    title: str
+    company_name: str
+    description: str
+    start_date: str
+    end_date: str
+
+@dataclass
+class Education:
+    school: str
+    major: str
+    degree: str
+    start_date: str
+    end_date: str
+
+@dataclass
+class Resume:
+    skills: List[str] = field(default_factory=list)
+    work_experience: List[JobExperience] = field(default_factory=list)
+    education: List[Education] = field(default_factory=list)
+    certifications: List[str] = field(default_factory=list)
+    projects: List[str] = field(default_factory=list)
 
 class DataLoader:
     """
@@ -189,7 +213,7 @@ class RelevanceScorer:
         }
 
 
-class Resume:
+class ResumeGenerator:
     """
     A class to generate resumes based on given data and job descriptions.
 
@@ -237,7 +261,7 @@ class Resume:
             self, 
             relevant_job_titles: List[str], 
             graduation_year: int
-        ) -> List[Dict[str, Any]]:
+        ) -> List[JobExperience]:
         
         work_experience = []
         total_days = 365 * random.randint(5, datetime.now().year - graduation_year + 1)
@@ -252,51 +276,50 @@ class Resume:
         start_date = datetime.now() - timedelta(days=total_days)
 
         for index, (job_index, title) in enumerate(relevant_job_titles):
-            job = {
-                "title": title,
-                "company_name": (self.get_job_info(job_index, self.data))[0],
-                "description": (self.get_job_info(job_index, self.data))[1],
-                "start_date": start_date.strftime('%m-%Y')
-            }
+            company_name, description = self.get_job_info(job_index, self.data)
             job_duration_days = int(work_experience_coefficients[index] * total_days)
-            job["end_date"] = (start_date + timedelta(days=job_duration_days)).strftime('%m-%Y')
+            end_date = start_date + timedelta(days=job_duration_days)
+
+            job = JobExperience(
+                title=title,
+                company_name=company_name,
+                description=description,
+                start_date=start_date.strftime('%m-%Y'),
+                end_date=end_date.strftime('%m-%Y')
+            )
 
             work_experience.append(job)
 
             gap_days = random.randint(0, int(work_experience_coefficients[-1] * total_days / 3))
-            start_date = start_date + timedelta(days=job_duration_days) + timedelta(days=gap_days)
+            start_date = end_date + timedelta(days=gap_days)
 
         return work_experience
 
-    def get_education(self, major: str, graduation_year: int) -> List[Dict[str, Any]]:
-        education = []
+    def get_education(self, major: str, graduation_year: int) -> List[Education]:
         degree_type = "Bachelor's"
         school_name = random.choice(self.data["schools"])
         graduation_month = random.choice(["05", "12"])
-        degree = {
-            "school": school_name,
-            "major": major,
-            "degree": degree_type,
-            "start_date": f"0{random.randint(7, 9)}-{graduation_year - 4}",
-            "end_date": f"{graduation_month}-{graduation_year}"
-        }
-        education.append(degree)
-        return education
+        degree = Education(
+            school=school_name,
+            major=major,
+            degree=degree_type,
+            start_date=f"0{random.randint(7, 9)}-{graduation_year - 4}",
+            end_date=f"{graduation_month}-{graduation_year}"
+        )
+        return [degree]
 
-    def generate_resume(self, job_description: Dict[str, Any]) -> Dict[str, Any]:
+    def generate_resume(self, job_description: Dict[str, Any]) -> Resume:
         results = self.scorer.find_relevant_matches(job_description)
         relevant_job_titles = results['job_titles']
         relevant_skills = results['skills']
         relevant_major = results['major'][0] if results['major'] else "No major found"
         graduation_year = random.randint(2008, 2018)
 
-        resume = {
-            "skills": relevant_skills,
-            "work_experience": self.get_work_experience(relevant_job_titles, graduation_year),
-            "education": self.get_education(relevant_major, graduation_year),
-            "certifications": [],
-            "projects": []
-        }
+        resume = Resume(
+            skills=relevant_skills,
+            work_experience=self.get_work_experience(relevant_job_titles, graduation_year),
+            education=self.get_education(relevant_major, graduation_year),
+        )
         return resume
 
 
@@ -323,7 +346,7 @@ class NltkMiner(BaseMiner):
     def __init__(self):
         super().__init__()
         self.data_loader = DataLoader()
-        self.resume = Resume(self.data_loader.data)
+        self.resume_generator = ResumeGenerator(self.data_loader.data)
 
-    def generate_response(self, prompt: str) -> Dict[str, Any]:
-        return self.resume.generate_resume(prompt)
+    def generate_response(self, prompt: str) -> Resume:
+        return self.resume_generator.generate_resume(prompt)
