@@ -42,7 +42,7 @@ class BaseMiner(Module):
         logger.info(f"Job Description: {prompt}")
         resume = self.generate_response(prompt)
 
-        resume_json = (resume.to_json())
+        resume_json = resume.to_json()
 
         logger.info(f"Generated Resume: {resume_json}")
         end_time = time.time()
