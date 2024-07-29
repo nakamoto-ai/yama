@@ -36,6 +36,10 @@ For Students: Yama provides a streamlined path to create professional resumes th
 For Companies: Yama offers precise tools for evaluating candidate resumes, making the hiring process more efficient and effective.
 For Recruiters: Yama serves as a comprehensive solution for managing and assessing large volumes of resumes quickly and accurately, helping you find the best candidates with ease.
 
+## Leaderboard
+
+https://huggingface.co/spaces/samNakamoto/yama-leaderboard 
+
 ## Validator
 
 ### Hardware Requirements
