@@ -40,6 +40,7 @@ For Recruiters: Yama serves as a comprehensive solution for managing and assessi
 
 https://huggingface.co/spaces/samNakamoto/yama-leaderboard 
 
+
 ## Validator
 
 ### Hardware Requirements
