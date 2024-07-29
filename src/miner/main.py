@@ -36,7 +36,7 @@ if __name__ == '__main__':
              miner,
              keypair,
              limiter=bucket,
-             subnets_whitelist=[18],
+             subnets_whitelist=[config.get_netuid()],
              use_testnet=config.get_testnet()
         )
 
