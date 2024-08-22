@@ -243,6 +243,15 @@ class ATS:
             return normalized_values
         return values
 
+    def safe_json_loads(resume_data):
+        if isinstance(resume_data, dict):
+            return resume_data
+        try:
+            return json.loads(resume_data)
+        except json.JSONDecodeError as e:
+            print(f"JSON error: {e}")
+            return {}  # or handle the error accordingly
+
     def calculate_ats_score(self, job_description: Dict[str, Any], uid: str) -> Dict[str, Any]:
         resume_data = self.resume_data.get(uid, None)
 
@@ -263,7 +272,7 @@ class ATS:
             reformatted_job_description = self.reformat_job_description(job_description)
             job_description = reformatted_job_description
 
-            resume_data_literal = ast.literal_eval(resume_data)
+            resume_data_literal = self.safe_json_loads(resume_data)
 
             if 'education' in resume_data:
                 education_score = self.score_education(job_description["education"], resume_data_literal['education'])
