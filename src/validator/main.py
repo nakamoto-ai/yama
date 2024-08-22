@@ -491,6 +491,7 @@ if __name__ == '__main__':
 
     logger.info("Downloading punkt...")
     nltk.download('punkt')
+    nltk.download('punkt_tab')
     logger.info("Finished")
 
     try:
