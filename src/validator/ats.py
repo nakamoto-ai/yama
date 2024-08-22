@@ -243,7 +243,7 @@ class ATS:
             return normalized_values
         return values
 
-    def safe_json_loads(resume_data):
+    def safe_json_loads(self, resume_data):
         if isinstance(resume_data, dict):
             return resume_data
         try:
